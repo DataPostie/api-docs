@@ -1,0 +1,435 @@
+openapi: 3.1.0
+
+info:
+  version: 0.5.0
+  title: DataPostie API
+  description: >
+    Public documentation for the DataPostie API. DataPostie enables you to safely and easily monetise and share your data. It sits directly on top of your data infrastructure without moving your data, creates an attractive user portal for your users to acquire the data, and takes care of the security, anonymisation, and delivery aspects of the data transfer.<br />
+    DataPostie is a SaaS platform and has full API coverage.
+
+servers:
+- url: https://api.demo.datapostie.com/
+
+components:
+  securitySchemes:
+    UserToken:
+      type: apiKey
+      name: token
+      in: header
+    AdminToken:
+      type: apiKey
+      name: adminToken
+      in: header
+  schemas:
+    EmptyResponse:
+      examples: [null]
+    ParametersInput:
+      oneOf:
+      - type: string
+        description: A comma-separated string for key-value pairs
+        examples: ['key1=value1,key2=value2']
+      - type: object
+        examples:
+        - field1: value1
+          field2: value2
+    ConnectionDialect:
+      type: string
+      enum: [mysql, bigquery, postgresql, redshift, sql_server, snowflake, teradata, mariadb, db2, athena, aurora, hive, spark, impala, dremio, firebolt, oracle, vertica, synapse, s3, gcs, blob, looker]
+    ConnectionRequestBody:
+      type: object
+      properties:
+        name:
+          type: string
+        dialect:
+          $ref: '#/components/schemas/ConnectionDialect'
+        host:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+        parameters:
+          $ref: '#/components/schemas/ParametersInput'
+    ConnectionResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          default: 1
+        name:
+          type: string
+        dialect:
+          $ref: '#/components/schemas/ConnectionDialect'
+        host:
+          type: string
+        createDate:
+          type: string
+          format: date
+    ConnectionDialectResponse:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ConnectionDialect'
+        name:
+            type: string
+    DatabaseTableResponse:
+      type: object
+      properties:
+        name:
+            type: string
+        description:
+            type: string
+        maxRowCount:
+            type: integer
+            examples: [10000]
+    TableFieldResponse:
+      type: object
+      properties:
+        name:
+            type: string
+        dataType:
+            type: string
+            examples: [string, int, float, boolean, date, datetime, timestamp]
+        description:
+            type: string
+    TableRowResponse:
+      type: object
+      properties: {}
+      description: An instance of a table row in a query response. A JSON object with generic keys - each key represents a table column header.
+      examples:
+      - field1: value1
+        field2: value2
+
+    AdminUserLogin:
+      type: object
+      required:
+      - email
+      - password
+      properties: 
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    TokenResponse:
+      type: object
+      properties: 
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+
+  parameters:
+    ConnectionId:
+      name: connection_id
+      description: Connection identifier from /api/connections
+      in: path
+      required: true
+      schema:
+        type: integer
+    DatabaseId:
+      name: database_id
+      description: Schema or database identifier within that connection's dialect
+      in: path
+      required: true
+      schema:
+        type: string
+    TableId:
+      name: table_id
+      description: Table identifier within the database/schema
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    400Error:
+      description: Invalid client request
+      content:
+        text/html:
+          schema:
+            type: string
+            default: Error message 
+    401Error:
+      description: Unauthorized - You do not have permission to make this API call with your current user.
+      content:
+        text/html:
+          schema:
+            type: string
+            default: Error message 
+
+paths:
+  /api/connections:
+    get:
+      summary: List Connections
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: List all connections.
+      responses:
+        '200':
+          description: Successfully returned a list of connections.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConnectionResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/connections/dialects:
+    get:
+      summary: List Connection Dialects
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: List connection dialects (data sources).
+      responses:
+        '200':
+          description: Successfully returned a list of connection dialects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConnectionDialectResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/connections/{connection_id}/databases:
+    get:
+      summary: List Connection Databases
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: List available databases, data schemas, or folders for the specified connection. These are the schemas available in the database, not the admin-defined datasets the users will see.
+      parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+      responses:
+        '200':
+          description: Successfully returned the specified connection database schema identifiers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/connections/{connection_id}/database_tables/{database_id}:
+    get:
+      summary: List Connection Database Tables
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: List available tables for the specified database schema identifier in the specified connection.
+      parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+      - $ref: '#/components/parameters/DatabaseId'
+      responses:
+        '200':
+          description: Successfully returned the specified connection database schema identifiers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DatabaseTableResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/connections/{connection_id}/database_table_fields/{database_id}/{table_id}:
+    get:
+      summary: List Connection Database Table Fields
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: List available tables for the specified database schema identifier in the specified connection.
+      parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+      - $ref: '#/components/parameters/DatabaseId'
+      - $ref: '#/components/parameters/TableId'
+      responses:
+        '200':
+          description: Successfully returned the specified connection database schema identifiers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TableFieldResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/connections/{connection_id}/database_table_preview/{database_id}/{table_id}:
+    get:
+      summary: Get Connection Database Table Preview
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: Returns the preview of the specified table in a given database/schema identifier in a given connection.
+      parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+      - $ref: '#/components/parameters/DatabaseId'
+      - $ref: '#/components/parameters/TableId'
+      responses:
+        '200':
+          description: Successfully returned the specified connection database schema identifiers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TableRowResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/connections/{connection_id}:
+    get:
+      summary: Get Connection
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: List connection dialects (data sources).
+      parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+      responses:
+        '200':
+          description: Successfully returned the specified connection details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/connections/test/{connection_id}:
+    get:
+      summary: Test Connection
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: Test the specified connection. Returns an empty 200 response on success.
+      parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+      responses:
+        '200':
+          description: Connection test successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/connections/create:
+    post:
+      summary: Create Connection
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: Create a connection.
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ConnectionRequestBody'
+              - required:
+                - name
+                - dialect
+                - host
+      responses:
+        '200':
+          description: Connection successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/connections/update/{connection_id}:
+    patch:
+      summary: Update Connection
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: Update specific fields of a connection.
+      parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+      requestBody: 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectionRequestBody'
+      responses:
+        '200':
+          description: Connection successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/connections/delete/{connection_id}:
+    delete:
+      summary: Delete Connection
+      tags: [Connections]
+      security:
+      - AdminToken: []
+      description: Delete a connection.
+      parameters:
+      - $ref: '#/components/parameters/ConnectionId'
+      responses:
+        '200':
+          description: Connection successfully deleted.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Deleted connection ID
+                examples: [1]
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  
+  /api/auth/admin/login:
+    post: 
+      tags: [Auth]
+      description: Login with admin username and password and obtain authorization token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserLogin'
+      responses:
+        '200':
+          description: Successfully returned admin authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
