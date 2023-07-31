@@ -35,7 +35,7 @@ components:
     ConnectionDialect:
       type: string
       enum: [mysql, bigquery, postgresql, redshift, sql_server, snowflake, teradata, mariadb, db2, athena, aurora, hive, spark, impala, dremio, firebolt, oracle, vertica, synapse, s3, gcs, blob, looker]
-    ConnectionRequestBody:
+    ConnectionBase:
       type: object
       properties:
         name:
@@ -44,28 +44,27 @@ components:
           $ref: '#/components/schemas/ConnectionDialect'
         host:
           type: string
-        username:
-          type: string
-        password:
-          type: string
-          format: password
         parameters:
           $ref: '#/components/schemas/ParametersInput'
+    ConnectionRequestBody:
+      allOf:
+      - $ref: '#/components/schemas/ConnectionBase'
+      - properties:
+          username:
+            type: string
+          password:
+            type: string
+            format: password
     ConnectionResponse:
-      type: object
-      properties:
-        id:
-          type: integer
-          default: 1
-        name:
-          type: string
-        dialect:
-          $ref: '#/components/schemas/ConnectionDialect'
-        host:
-          type: string
-        createDate:
-          type: string
-          format: date
+      allOf:
+      - properties:
+          id:
+            type: integer
+            default: 1
+          createDate:
+            type: string
+            format: date
+      - $ref: '#/components/schemas/ConnectionBase'
     ConnectionDialectResponse:
       type: object
       properties:
@@ -100,6 +99,53 @@ components:
       examples:
       - field1: value1
         field2: value2
+    DatasetBase:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        connectionId:
+          type: integer
+        identifierInDatabase:
+          type: string
+          description: the dataset's identifier in the connection database (e.g. database schema)
+        isPublic:
+          type: boolean
+        iconSource:
+          type: string
+          format: uri
+          description: A publicly accessible image URL for the icon associated to this dataset.
+        isNotAvailable:
+          type: boolean
+          description: Display the dataset as only accessible on demand, i.e. not through the portal or API.
+        minQueryRowCount:
+          type: integer
+          description: The minimum number of rows/objects allowed in queries to this dataset.
+        paymentMethodId:
+          type: integer
+        pricePerRow:
+          type: number
+          format: float
+    DatasetResponse:
+      allOf:
+      - properties:
+          id:
+            type: integer
+          createDate:
+            type: string
+            format: date-time
+          lastModifiedDate:
+            type: string
+            format: date-time
+          dateDeleted:
+            type: string
+            format: date-time
+      - $ref: '#/components/schemas/DatasetBase'
+    DatasetRequestBody:
+      allOf:
+      - $ref: '#/components/schemas/DatasetBase'
 
     AdminUserLogin:
       type: object
@@ -144,6 +190,13 @@ components:
       required: true
       schema:
         type: string
+    DatasetId:
+      name: dataset_id
+      description: Dataset identifier from /api/datasets
+      in: path
+      required: true
+      schema:
+        type: integer
 
   responses:
     400Error:
@@ -253,7 +306,7 @@ paths:
       tags: [Connections]
       security:
       - AdminToken: []
-      description: List available tables for the specified database schema identifier in the specified connection.
+      description: List available fields in the specified table of the specified database schema identifier in the specified connection.
       parameters:
       - $ref: '#/components/parameters/ConnectionId'
       - $ref: '#/components/parameters/DatabaseId'
@@ -411,7 +464,195 @@ paths:
           $ref: '#/components/responses/400Error'
         '401':
           $ref: '#/components/responses/401Error'
-  
+
+  /api/datasets:
+    get:
+      summary: List Datasets
+      tags: [Datasets]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: List all datasets. If a user is not authenticated, only public datasets (if any) will be returned. An admin user can see all datasets.
+      responses:
+        '200':
+          description: Successfully returned a list of datasets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DatasetResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+  /api/datasets/{dataset_id}:
+    get:
+      summary: Get Dataset
+      tags: [Datasets]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: Get details of the specified dataset.
+      parameters:
+      - $ref: '#/components/parameters/DatasetId'
+      responses:
+        '200':
+          description: Successfully returned the specified dataset details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/datasets/{dataset_id}/tables:
+    get:
+      summary: List dataset tables
+      tags: [Datasets]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: List available tables for the specified dataset.
+      parameters:
+      - $ref: '#/components/parameters/DatasetId'
+      responses:
+        '200':
+          description: Successfully returned the specified dataset tables.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DatabaseTableResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/datasets/{dataset_id}/table_fields/{table_id}:
+    get:
+      summary: List dataset table fields
+      tags: [Datasets]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: List available fields in the specified table of the specified dataset.
+      parameters:
+      - $ref: '#/components/parameters/DatasetId'
+      - $ref: '#/components/parameters/TableId'
+      responses:
+        '200':
+          description: Successfully returned the specified table fields.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TableFieldResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/datasets/{dataset_id}/table_preview/{table_id}:
+    get:
+      summary: Get dataset table preview
+      tags: [Datasets]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: Return a preview of the specified table of the specified dataset.
+      parameters:
+      - $ref: '#/components/parameters/DatasetId'
+      - $ref: '#/components/parameters/TableId'
+      responses:
+        '200':
+          description: Successfully returned the specified table preview.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TableRowResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/datasets/create:
+    post:
+      summary: Create Dataset
+      tags: [Datasets]
+      security:
+      - AdminToken: []
+      description: Create a dataset.
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/DatasetRequestBody'
+              - required:
+                - name
+                - connectionId
+                - identifierInDatabase
+      responses:
+        '200':
+          description: Dataset successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/datasets/update/{dataset_id}:
+    patch:
+      summary: Update Dataset
+      tags: [Datasets]
+      security:
+      - AdminToken: []
+      description: Update specific fields of a dataset.
+      parameters:
+      - $ref: '#/components/parameters/DatasetId'
+      requestBody: 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetRequestBody'
+      responses:
+        '200':
+          description: Dataset successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/datasets/delete/{dataset_id}:
+    delete:
+      summary: Delete Dataset
+      tags: [Datasets]
+      security:
+      - AdminToken: []
+      description: Delete a dataset.
+      parameters:
+      - $ref: '#/components/parameters/DatasetId'
+      responses:
+        '200':
+          description: Dataset successfully deleted.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Deleted dataset ID
+                examples: [1]
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
   /api/auth/admin/login:
     post: 
       tags: [Auth]
@@ -431,5 +672,3 @@ paths:
                 $ref: '#/components/schemas/TokenResponse'
         '400':
           $ref: '#/components/responses/400Error'
-        '401':
-          $ref: '#/components/responses/401Error'
