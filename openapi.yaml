@@ -146,6 +146,162 @@ components:
     DatasetRequestBody:
       allOf:
       - $ref: '#/components/schemas/DatasetBase'
+    QuerySource:
+      type: string
+      enum: [UI, API]
+      description: Source from which the query was created (e.g. UI vs. API).
+    SortParameter:
+      type: object
+      properties:
+        field:
+          type: string
+        order:
+          type: integer
+          enum: [1, -1]
+      description: Sorts a query by the given field ascending (1) or descending (-1).
+    QueryParams:
+      type: object
+      properties:
+        datasetId:
+          type: number
+          examples: [1]
+        table:
+          type: string
+          description: the table identifier in teh query connection's database.
+        fields:
+          type: array
+          items:
+            type: string
+        distinct:
+          type: boolean
+        rowCount:
+          type: integer
+        sorts:
+          type: array
+          items:
+            $ref: '#/components/schemas/SortParameter'
+      required:
+        - datasetId
+        - table
+        - fields
+        - rowCount
+      description: The parameters (building blocks) of the data query
+    QueryCost:
+      type: object
+      properties:
+        baseAmount:
+          type: number
+          format: float
+        currency:
+          type: string
+          examples: [USD, GBP, EUR]
+        discountedAmount:
+          type: number
+          format: float
+        creditsUsed:
+          type: integer
+      required:
+        - baseAmount
+        - currency
+        - discountedAmount
+        - creditsUsed
+      description: The user cost details of the data query - user-specific.
+    QueryDeliveryMethod:
+      type: string
+      enum: [email, s3, gcs, blob, sftp, api]
+    QueryDeliveryParameters:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: If the selected delivery method is email, the email address to which the query results should be sent.
+        bucketName:
+          type: string
+          description: If the selected delivery method is a cloud-bucket-based environment, the bucket name to which the query results should be sent.
+        bucketRegion:
+          type: string
+          description: If the selected delivery method is a cloud-bucket-based environment, the region of the bucket to which the query results should be sent.
+        fileKey:
+          type: string
+          description: If the selected delivery method is a cloud-bucket-based environment, the name of the file containing the query results.
+        accessKeyId:
+          type: integer
+          description: The unique identifier of the access key object (from /api/access_keys) that DataPostie will use to access the selected delivery location
+          examples: [1]
+    QueryDeliveryDetails:
+      type: object
+      properties:
+        method:
+          $ref: '#/components/schemas/QueryDeliveryMethod'
+        methodParameters:
+          $ref: '#/components/schemas/QueryDeliveryParameters'
+        files:
+          type: array
+          items:
+            type: string
+        sendDate:
+          type: string
+          format: date-time
+        sentTo:
+          type: string
+          format: email
+    QueryBase:
+      type: object
+      properties:
+        source:
+          $ref: '#/components/schemas/QuerySource'
+        queryParams:
+          $ref: '#/components/schemas/QueryParams'
+        queryDeliveryDetails:
+          $ref: '#/components/schemas/QueryDeliveryDetails'
+    QueryResponse:
+      allOf:
+      - properties:
+          id:
+            type: integer
+            examples: [1]
+          createDate:
+            type: string
+            format: date-time
+          lastRunDate:
+            type: string
+            format: date-time
+          duration:
+            type: number
+            format: float
+            description: Duration of the completed query runtime, in seconds.
+          userId:
+            type: integer
+            description: Unique ID of the user who created the query. null if unregistered user who created the query on a public dataset.
+            examples: [1]
+          queryCost:
+            $ref: '#/components/schemas/QueryCost'
+      - $ref: '#/components/schemas/QueryBase'
+    QueryRequestBody:
+      allOf:
+      - $ref: '#/components/schemas/QueryBase'
+    FileDownloadResponse:
+      type: object
+      properties:
+        fileName:
+          type: string
+        signedUrl:
+          type: string
+          format: uri
+      description: A signed file download URL.
+    RunQueryResponse:
+      description: A query result. Returned format depends on the delivery method, and final query cost. If it's a paid query with outstanding balance, returns a payment URL. Otherwise if the delivery method is API, returns the query results as a JSON object. Otherwise returns the signed file URLs where the query results can be downloaded.
+      oneOf:
+      - type: array
+        items:
+          $ref: '#/components/schemas/TableRowResponse'
+      - type: string
+        format: uri
+        description: Payment portal redirect URL.
+      - type: array
+        items:
+          $ref: '#/components/schemas/FileDownloadResponse'
 
     AdminUserLogin:
       type: object
@@ -193,6 +349,13 @@ components:
     DatasetId:
       name: dataset_id
       description: Dataset identifier from /api/datasets
+      in: path
+      required: true
+      schema:
+        type: integer
+    QueryId:
+      name: query_id
+      description: Query identifier from /api/queries
       in: path
       required: true
       schema:
@@ -648,6 +811,173 @@ paths:
                 type: integer
                 description: Deleted dataset ID
                 examples: [1]
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/queries:
+    get:
+      summary: List Queries
+      tags: [Queries]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: List all queries previously created by the authenticated user. An admin user can see all queries.
+      responses:
+        '200':
+          description: Successfully returned a list of queries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueryResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+  /api/queries/{query_id}:
+    get:
+      summary: Get Query
+      tags: [Queries]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: Get details of the specified query.
+      parameters:
+      - $ref: '#/components/parameters/QueryId'
+      responses:
+        '200':
+          description: Successfully returned the specified query details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/queries/cost/{query_id}:
+    get:
+      summary: Get Query Cost
+      tags: [Queries]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: Get the cost details of the specified query.
+      parameters:
+      - $ref: '#/components/parameters/QueryId'
+      responses:
+        '200':
+          description: Successfully returned the specified query cost details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryCost'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/queries/run/{query_id}:
+    get:
+      summary: Run Query
+      tags: [Queries]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: Run the specified query and retrieve the results via the query's specified delivery method.
+      parameters:
+      - $ref: '#/components/parameters/QueryId'
+      responses:
+        '200':
+          description: Successfully returned the specified query cost details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunQueryResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/queries/create:
+    post:
+      summary: Create Query
+      tags: [Queries]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: Create a query.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/QueryRequestBody'
+              - required:
+                - queryParams
+      responses:
+        '200':
+          description: Successfully returned the specified query cost details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunQueryResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/queries/create_and_run:
+    post:
+      summary: Create and Run Query
+      tags: [Queries]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: Create a query then run it and return the results. Equivalent of the two previous routes run in succession.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/QueryRequestBody'
+              - required:
+                - queryParams
+      responses:
+        '200':
+          description: Successfully returned the specified query cost details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunQueryResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/queries/cost:
+    post:
+      summary: Get Query Cost
+      tags: [Queries]
+      security:
+      - UserToken: []
+      - AdminToken: []
+      description: Get the cost details of a query with the specified parameters, without creating the query.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/QueryRequestBody'
+              - required:
+                - queryParams
+      responses:
+        '200':
+          description: Successfully returned the specified query cost details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryCost'
         '400':
           $ref: '#/components/responses/400Error'
         '401':
