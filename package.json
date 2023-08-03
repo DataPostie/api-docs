@@ -1,0 +1,14 @@
+{
+  "name": "datapostie-api-docs",
+  "version": "0.5.0",
+  "description": "DataPostie API OpenAPI spec",
+  "scripts": {
+    "build": "js-yaml dist/openapi.yaml > dist/openapi.json && cp dist/openapi.json dist/openapi300.json && sed -i 's/\"openapi\": \"3.1.0\"/\"openapi\": \"3.0.0\"/g' dist/openapi300.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}
