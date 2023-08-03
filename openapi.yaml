@@ -423,6 +423,445 @@ components:
             format: date-time
       - $ref: '#/components/schemas/UserBase'
 
+    PaymentMethodType:
+      type: string
+      enum: [Stripe, Invoice, Paypal, Mangopay, Adyen]
+    PaymentMethodBase:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/PaymentMethodType'
+        parameters:
+          type: object
+          examples:
+          - field1: value1
+            field2: value2
+    PaymentMethodResponse:
+      allOf:
+      - properties:
+          id:
+            type: integer
+            examples: [1]
+          createDate:
+            type: string
+            format: date-time
+          lastModifiedDate:
+            type: string
+            format: date-time
+          createdByAdminUserId:
+            type: integer
+            examples: [1]
+      - $ref: '#/components/schemas/PaymentMethodBase'
+    PaymentMethodRequestBody:
+      allOf:
+      - $ref: '#/components/schemas/PaymentMethodBase'
+      - properties:
+          publicKey:
+            type: string
+            format: password
+          secret:
+            type: string
+            format: password
+          webhookSecret:
+            type: string
+            format: password
+          publicKeyTest:
+            type: string
+            format: password
+          secretTest:
+            type: string
+            format: password
+          webhookSecretTest:
+            type: string
+            format: password
+
+    AuthMethodType:
+      type: string
+      enum: [email, google_ouath, saml]
+    AuthMethodBase:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/AuthMethodType'
+    AuthMethodResponse:
+      allOf:
+      - properties:
+          id:
+            type: integer
+            examples: [1]
+          createDate:
+            type: string
+            format: date-time
+          createdByAdminUserId:
+            type: integer
+            examples: [1]
+      - $ref: '#/components/schemas/AuthMethodBase'
+    AuthMethodRequestBody:
+      allOf:
+      - $ref: '#/components/schemas/AuthMethodBase'
+      - properties:
+          key:
+            type: string
+            format: password
+          publicKey:
+            type: string
+            format: password
+          secret:
+            type: string
+            format: password
+          keyTest:
+            type: string
+            format: password
+          publicKeyTest:
+            type: string
+            format: password
+          secretTest:
+            type: string
+            format: password
+
+    CaptchaMethodType:
+      type: string
+      enum: [reCaptcha]
+    CaptchaMethodBase:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/CaptchaMethodType'
+        parameters:
+          type: object
+          examples:
+          - field1: value1
+            field2: value2
+    CaptchaMethodResponse:
+      allOf:
+      - properties:
+          id:
+            type: integer
+            examples: [1]
+          createDate:
+            type: string
+            format: date-time
+          createdByAdminUserId:
+            type: integer
+            examples: [1]
+      - $ref: '#/components/schemas/CaptchaMethodBase'
+    CaptchaMethodRequestBody:
+      allOf:
+      - $ref: '#/components/schemas/CaptchaMethodBase'
+      - properties:
+          publicKey:
+            type: string
+            format: password
+          secret:
+            type: string
+            format: password
+          publicKeyTest:
+            type: string
+            format: password
+          secretTest:
+            type: string
+            format: password
+
+    CRMMethodType:
+      type: string
+      enum: [hubspot, mailchimp]
+    CRMMethodBase:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/CRMMethodType'
+        parameters:
+          type: object
+          examples:
+          - field1: value1
+            field2: value2
+    CRMMethodResponse:
+      allOf:
+      - properties:
+          id:
+            type: integer
+            examples: [1]
+          createDate:
+            type: string
+            format: date-time
+          createdByAdminUserId:
+            type: integer
+            examples: [1]
+      - $ref: '#/components/schemas/CRMMethodBase'
+    CRMMethodRequestBody:
+      allOf:
+      - $ref: '#/components/schemas/CRMMethodBase'
+      - properties:
+          publicKey:
+            type: string
+            format: password
+          secret:
+            type: string
+            format: password
+          publicKeyTest:
+            type: string
+            format: password
+          secretTest:
+            type: string
+            format: password
+
+    StorageMethodType:
+      type: string
+      enum: [s3, gcs, blob, cdn]
+    StorageMethodBase:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/StorageMethodType'
+        directory:
+          type: string
+        parameters:
+          type: object
+          examples:
+          - field1: value1
+            field2: value2
+    StorageMethodResponse:
+      allOf:
+      - properties:
+          id:
+            type: integer
+            examples: [1]
+          createDate:
+            type: string
+            format: date-time
+          createdByAdminUserId:
+            type: integer
+            examples: [1]
+      - $ref: '#/components/schemas/StorageMethodBase'
+    StorageMethodRequestBody:
+      allOf:
+      - $ref: '#/components/schemas/StorageMethodBase'
+      - properties:
+          key:
+            type: string
+            format: password
+          secret:
+            type: string
+            format: password
+
+    AccessKeyType:
+      type: string
+      enum: [username_password, google_cloud, aws, azure, ssh]
+    AccessKeyBase:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/AccessKeyType'
+        parameters:
+          type: object
+          examples:
+          - field1: value1
+            field2: value2
+        publicKey:
+          type: string
+          format: password
+    AccessKeyResponse:
+      allOf:
+      - properties:
+          id:
+            type: integer
+            examples: [1]
+          createDate:
+            type: string
+            format: date-time
+          lastModifiedDate:
+            type: string
+            format: date-time
+      - $ref: '#/components/schemas/AccessKeyBase'
+    AccessKeyRequestBody:
+      allOf:
+      - $ref: '#/components/schemas/AccessKeyBase'
+      - properties:
+          key:
+            type: string
+            format: password
+          secret:
+            type: string
+            format: password
+          keyTest:
+            type: string
+            format: password
+          publicKeyTest:
+            type: string
+            format: password
+          secretTest:
+            type: string
+            format: password
+
+    FileStagingLocationType:
+      type: string
+      enum: [gcs_bucket, s3_bucket]
+    FileStagingLocationBase:
+      type: object
+      properties:
+        bucketName:
+          type: string
+        type:
+          $ref: '#/components/schemas/FileStagingLocationType'
+        parameters:
+          type: object
+          examples:
+          - field1: value1
+            field2: value2
+    FileStagingLocationResponse:
+      allOf:
+      - properties:
+          id:
+            type: integer
+            examples: [1]
+          createDate:
+            type: string
+            format: date-time
+          isDefault:
+            type: boolean
+      - $ref: '#/components/schemas/FileStagingLocationBase'
+    FileStagingLocationRequestBody:
+      allOf:
+      - $ref: '#/components/schemas/FileStagingLocationBase'
+      - properties:
+          key:
+            type: string
+            format: password
+          secret:
+            type: string
+            format: password
+
+    DeliveryMethodResponse:
+      type: object
+      properties:
+        method:
+          $ref: '#/components/schemas/QueryDeliveryMethod'
+        displayName:
+          type: string
+        methodParameters:
+          type: object
+          properties:
+            accessKeyId:
+              type: integer
+              examples: [1]
+              description: reference to the access key used for the delivery method
+            publicKey:
+              type: string
+              format: password
+              description: public access key for the data consumer to add to their environment to allow the data platform to deliver the data to it.
+
+    InstanceConfigPublic:
+      type: object
+      properties:
+        allowPublicUserSignup:
+          type: boolean
+          description: Whether users are allowed to sign up to the platform from the general public, or only admins can create data consumer users.
+        entityName:
+          type: string
+          description: The name of the entity/company hosting the DataPostie platform, displayed to users.
+        mainSupportContact:
+          type: string
+          format: email
+          description: Contact for the support person/team for data consumer users.
+        initialUserCreditsPromo:
+          type: integer
+          examples: [5]
+          description: The number of credits a data consumer gets upon signing up. Default is 0.
+        logoUrl:
+          type: string
+          format: uri
+          description: The public URL of the hosting entity's logo.
+        faviconUrl:
+          type: string
+          format: uri
+          description: The public URL of the hosting entity's favicon.
+        backgroundColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; background color of the application.
+        menubarColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; navbar color of the application.
+        menubarLinkColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; color of the navbar links in the application.
+        textColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main text color in the application.
+        buttonColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main color of the buttons in the application.
+        buttonTextColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main color of the button text in the application.
+        cardColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main color of the cards in the application.
+        cardTextColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main color of the card text in the application.
+        primaryColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Color of the primary (highlight) text in the application.
+        secondaryColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Color of the secondary text in the application.
+        linkColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main color of the links in the application.
+        fontFileUrl:
+          type: string
+          format: uri
+          description: Theming&#58; The public URL of the hosting entity's main font file.
+    InstanceConfig:
+      allOf:
+      - $ref: '#/components/schemas/InstanceConfigPublic'
+      - properties:
+          tokenExpiryTimeSeconds:
+            type: integer
+            default: 3600
+            description: Default authentication token expiry time, in seconds.
+          defaultCreditsPaymentMethodId:
+            type: integer
+            examples: [1]
+            description: The default payment method used for credits purchasing.
+          defaultStorageMethodId:
+            type: integer
+            examples: [1]
+            description: The default storage method used for static assets (e.g. uploaded logo file, fonts file, etc.)
+    InstanceConfigMetadata:
+      type: object
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [string, email, number, boolean, date, file_url, image_url, color]
+
   parameters:
     ConnectionId:
       name: connection_id
@@ -466,6 +905,55 @@ components:
       required: true
       schema:
         type: string
+    PaymentMethodId:
+      name: payment_method_id
+      description: Payment Method identifier from /api/payment_methods
+      in: path
+      required: true
+      schema:
+        type: integer
+    AuthMethodId:
+      name: auth_method_id
+      description: Auth Method identifier from /api/payment_methods
+      in: path
+      required: true
+      schema:
+        type: integer
+    CaptchaMethodId:
+      name: captcha_method_id
+      description: Captcha Method identifier from /api/captcha_methods
+      in: path
+      required: true
+      schema:
+        type: integer
+    CRMMethodId:
+      name: crm_method_id
+      description: CRM Method identifier from /api/crm_methods
+      in: path
+      required: true
+      schema:
+        type: integer
+    StorageMethodId:
+      name: storage_method_id
+      description: Storage Method identifier from /api/storage_methods
+      in: path
+      required: true
+      schema:
+        type: integer
+    AccessKeyId:
+      name: access_key_id
+      description: Access Key identifier from /api/access_keys
+      in: path
+      required: true
+      schema:
+        type: integer
+    FileStagingLocationId:
+      name: file_staging_location_id
+      description: File Staging Loction identifier from /api/file_staging_locations
+      in: path
+      required: true
+      schema:
+        type: integer
 
   responses:
     400Error:
@@ -1312,6 +1800,1062 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserSession'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/payment_methods:
+    get:
+      summary: List Payment Methods
+      tags: [Payment Methods]
+      security:
+      - AdminToken: []
+      description: List all available payment methods.
+      responses:
+        '200':
+          description: Successfully returned a list of payment methods.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/payment_methods/{payment_method_id}:
+    get:
+      summary: Get Payment Method
+      tags: [Payment Methods]
+      security:
+      - AdminToken: []
+      description: Get details of the specified payment method.
+      parameters:
+      - $ref: '#/components/parameters/PaymentMethodId'
+      responses:
+        '200':
+          description: Successfully returned the specified payment method details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/payment_methods/create:
+    post:
+      summary: Create Payment Method
+      tags: [Payment Methods]
+      security:
+      - AdminToken: []
+      description: Create a payment method.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/PaymentMethodRequestBody'
+              - required:
+                - name
+                - type
+      responses:
+        '200':
+          description: Successfully returned the specified payment method details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/payment_methods/update/{payment_method_id}:
+    patch:
+      summary: Update Payment Method
+      tags: [Payment Methods]
+      security:
+      - AdminToken: []
+      description: Update specific fields of a payment method.
+      parameters:
+      - $ref: '#/components/parameters/PaymentMethodId'
+      requestBody: 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethodRequestBody'
+      responses:
+        '200':
+          description: Payment method successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/payment_methods/delete/{payment_method_id}:
+    delete:
+      summary: Delete Payment Method
+      tags: [Payment Methods]
+      security:
+      - AdminToken: []
+      description: Delete a payment method.
+      parameters:
+      - $ref: '#/components/parameters/PaymentMethodId'
+      responses:
+        '200':
+          description: Payment method successfully deleted.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Deleted payment method ID
+                examples: [1]
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/auth_methods:
+    get:
+      summary: List Auth Methods
+      tags: [Auth Methods]
+      security:
+      - AdminToken: []
+      description: List all available user authentication methods.
+      responses:
+        '200':
+          description: Successfully returned a list of auth methods.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuthMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth_methods/{auth_method_id}:
+    get:
+      summary: Get Auth Method
+      tags: [Auth Methods]
+      security:
+      - AdminToken: []
+      description: Get details of the specified auth method.
+      parameters:
+      - $ref: '#/components/parameters/AuthMethodId'
+      responses:
+        '200':
+          description: Successfully returned the specified auth method details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth_methods/create:
+    post:
+      summary: Create Auth Method
+      tags: [Auth Methods]
+      security:
+      - AdminToken: []
+      description: Create a auth method.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/AuthMethodRequestBody'
+              - required:
+                - name
+                - type
+      responses:
+        '200':
+          description: Successfully returned the specified auth method details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth_methods/update/{auth_method_id}:
+    patch:
+      summary: Update Auth Method
+      tags: [Auth Methods]
+      security:
+      - AdminToken: []
+      description: Update specific fields of a auth method.
+      parameters:
+      - $ref: '#/components/parameters/AuthMethodId'
+      requestBody: 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthMethodRequestBody'
+      responses:
+        '200':
+          description: Auth method successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth_methods/delete/{auth_method_id}:
+    delete:
+      summary: Delete Auth Method
+      tags: [Auth Methods]
+      security:
+      - AdminToken: []
+      description: Delete a auth method.
+      parameters:
+      - $ref: '#/components/parameters/AuthMethodId'
+      responses:
+        '200':
+          description: Auth method successfully deleted.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Deleted auth method ID
+                examples: [1]
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/captcha_methods:
+    get:
+      summary: List Captcha Methods
+      tags: [Captcha Methods]
+      security:
+      - AdminToken: []
+      description: List all available captcha methods.
+      responses:
+        '200':
+          description: Successfully returned a list of captcha methods.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaptchaMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/captcha_methods/{captcha_method_id}:
+    get:
+      summary: Get Captcha Method
+      tags: [Captcha Methods]
+      security:
+      - AdminToken: []
+      description: Get details of the specified captcha method.
+      parameters:
+      - $ref: '#/components/parameters/CaptchaMethodId'
+      responses:
+        '200':
+          description: Successfully returned the specified captcha method details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptchaMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/captcha_methods/create:
+    post:
+      summary: Create Captcha Method
+      tags: [Captcha Methods]
+      security:
+      - AdminToken: []
+      description: Create a captcha method.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CaptchaMethodRequestBody'
+              - required:
+                - name
+                - type
+      responses:
+        '200':
+          description: Successfully returned the specified captcha method details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptchaMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/captcha_methods/update/{captcha_method_id}:
+    patch:
+      summary: Update Captcha Method
+      tags: [Captcha Methods]
+      security:
+      - AdminToken: []
+      description: Update specific fields of a captcha method.
+      parameters:
+      - $ref: '#/components/parameters/CaptchaMethodId'
+      requestBody: 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaptchaMethodRequestBody'
+      responses:
+        '200':
+          description: Captcha method successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptchaMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/captcha_methods/delete/{captcha_method_id}:
+    delete:
+      summary: Delete Captcha Method
+      tags: [Captcha Methods]
+      security:
+      - AdminToken: []
+      description: Delete a captcha method.
+      parameters:
+      - $ref: '#/components/parameters/CaptchaMethodId'
+      responses:
+        '200':
+          description: Captcha method successfully deleted.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Deleted captcha method ID
+                examples: [1]
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/crm_methods:
+    get:
+      summary: List CRM Methods
+      tags: [CRM Methods]
+      security:
+      - AdminToken: []
+      description: List all available CRM methods.
+      responses:
+        '200':
+          description: Successfully returned a list of CRM methods.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CRMMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/crm_methods/{crm_method_id}:
+    get:
+      summary: Get CRM Method
+      tags: [CRM Methods]
+      security:
+      - AdminToken: []
+      description: Get details of the specified CRM method.
+      parameters:
+      - $ref: '#/components/parameters/CRMMethodId'
+      responses:
+        '200':
+          description: Successfully returned the specified CRM method details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRMMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/crm_methods/create:
+    post:
+      summary: Create CRM Method
+      tags: [CRM Methods]
+      security:
+      - AdminToken: []
+      description: Create a CRM method.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CRMMethodRequestBody'
+              - required:
+                - name
+                - type
+      responses:
+        '200':
+          description: Successfully returned the specified CRM method details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRMMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/crm_methods/update/{crm_method_id}:
+    patch:
+      summary: Update CRM Method
+      tags: [CRM Methods]
+      security:
+      - AdminToken: []
+      description: Update specific fields of a CRM method.
+      parameters:
+      - $ref: '#/components/parameters/CRMMethodId'
+      requestBody: 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CRMMethodRequestBody'
+      responses:
+        '200':
+          description: CRM method successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRMMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/crm_methods/delete/{crm_method_id}:
+    delete:
+      summary: Delete CRM Method
+      tags: [CRM Methods]
+      security:
+      - AdminToken: []
+      description: Delete a CRM method.
+      parameters:
+      - $ref: '#/components/parameters/CRMMethodId'
+      responses:
+        '200':
+          description: CRM method successfully deleted.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Deleted CRM method ID
+                examples: [1]
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/storage_methods:
+    get:
+      summary: List Storage Methods
+      tags: [Storage Methods]
+      security:
+      - AdminToken: []
+      description: List all available storage methods.
+      responses:
+        '200':
+          description: Successfully returned a list of storage methods.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StorageMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/storage_methods/types:
+    get:
+      summary: List Storage Method Types
+      tags: [Storage Methods]
+      security:
+      - AdminToken: []
+      description: List all available storage method types.
+      responses:
+        '200':
+          description: Successfully returned a list of storage method types.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      $ref: '#/components/schemas/StorageMethodType'
+                    name:
+                      type: string
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/storage_methods/{storage_method_id}:
+    get:
+      summary: Get Storage Method
+      tags: [Storage Methods]
+      security:
+      - AdminToken: []
+      description: Get details of the specified storage method.
+      parameters:
+      - $ref: '#/components/parameters/StorageMethodId'
+      responses:
+        '200':
+          description: Successfully returned the specified storage method details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/storage_methods/create:
+    post:
+      summary: Create Storage Method
+      tags: [Storage Methods]
+      security:
+      - AdminToken: []
+      description: Create a storage method.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/StorageMethodRequestBody'
+              - required:
+                - name
+                - type
+      responses:
+        '200':
+          description: Successfully returned the specified storage method details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/storage_methods/update/{storage_method_id}:
+    patch:
+      summary: Update Storage Method
+      tags: [Storage Methods]
+      security:
+      - AdminToken: []
+      description: Update specific fields of a storage method.
+      parameters:
+      - $ref: '#/components/parameters/StorageMethodId'
+      requestBody: 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorageMethodRequestBody'
+      responses:
+        '200':
+          description: Storage method successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/storage_methods/delete/{storage_method_id}:
+    delete:
+      summary: Delete Storage Method
+      tags: [Storage Methods]
+      security:
+      - AdminToken: []
+      description: Delete a storage method.
+      parameters:
+      - $ref: '#/components/parameters/StorageMethodId'
+      responses:
+        '200':
+          description: Storage method successfully deleted.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Deleted storage method ID
+                examples: [1]
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/access_keys:
+    get:
+      summary: List Access Keys
+      tags: [Access Keys]
+      security:
+      - AdminToken: []
+      description: List all available access keys.
+      responses:
+        '200':
+          description: Successfully returned a list of access keys.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccessKeyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/access_keys/types:
+    get:
+      summary: List Access Key Types
+      tags: [Access Keys]
+      security:
+      - AdminToken: []
+      description: List all available access key types.
+      responses:
+        '200':
+          description: Successfully returned a list of access key types.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      $ref: '#/components/schemas/AccessKeyType'
+                    name:
+                      type: string
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/access_keys/{access_key_id}:
+    get:
+      summary: Get Access Key
+      tags: [Access Keys]
+      security:
+      - AdminToken: []
+      description: Get details of the specified access key.
+      parameters:
+      - $ref: '#/components/parameters/AccessKeyId'
+      responses:
+        '200':
+          description: Successfully returned the specified access key details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessKeyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/access_keys/create:
+    post:
+      summary: Create Access Key
+      tags: [Access Keys]
+      security:
+      - AdminToken: []
+      description: Create a access key.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/AccessKeyRequestBody'
+              - required:
+                - name
+                - type
+                - key
+                - secret
+      responses:
+        '200':
+          description: Successfully returned the specified access key details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessKeyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/access_keys/update/{access_key_id}:
+    patch:
+      summary: Update Access Key
+      tags: [Access Keys]
+      security:
+      - AdminToken: []
+      description: Update specific fields of a access key.
+      parameters:
+      - $ref: '#/components/parameters/AccessKeyId'
+      requestBody: 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessKeyRequestBody'
+      responses:
+        '200':
+          description: Access key successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessKeyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/access_keys/delete/{access_key_id}:
+    delete:
+      summary: Delete Access Key
+      tags: [Access Keys]
+      security:
+      - AdminToken: []
+      description: Delete a access key.
+      parameters:
+      - $ref: '#/components/parameters/AccessKeyId'
+      responses:
+        '200':
+          description: Access key successfully deleted.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Deleted access key ID
+                examples: [1]
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/file_staging_locations:
+    get:
+      summary: List File Staging Locations
+      tags: [File Staging Locations]
+      security:
+      - AdminToken: []
+      description: List all available file staging locations.
+      responses:
+        '200':
+          description: Successfully returned a list of file staging locations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FileStagingLocationResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/file_staging_locations/types:
+    get:
+      summary: List File Staging Location Types
+      tags: [File Staging Locations]
+      security:
+      - AdminToken: []
+      description: List all available file staging location types.
+      responses:
+        '200':
+          description: Successfully returned a list of file staging location types.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      $ref: '#/components/schemas/FileStagingLocationType'
+                    name:
+                      type: string
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/file_staging_locations/{file_staging_location_id}:
+    get:
+      summary: Get File Staging Location
+      tags: [File Staging Locations]
+      security:
+      - AdminToken: []
+      description: Get details of the specified file staging location.
+      parameters:
+      - $ref: '#/components/parameters/FileStagingLocationId'
+      responses:
+        '200':
+          description: Successfully returned the specified file staging location details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileStagingLocationResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/file_staging_locations/create:
+    post:
+      summary: Create File Staging Location
+      tags: [File Staging Locations]
+      security:
+      - AdminToken: []
+      description: Create a file staging location.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/FileStagingLocationRequestBody'
+              - required:
+                - name
+                - type
+      responses:
+        '200':
+          description: Successfully returned the specified file staging location details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileStagingLocationResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/file_staging_locations/update/{file_staging_location_id}:
+    patch:
+      summary: Update File Staging Location
+      tags: [File Staging Locations]
+      security:
+      - AdminToken: []
+      description: Update specific fields of a file staging location.
+      parameters:
+      - $ref: '#/components/parameters/FileStagingLocationId'
+      requestBody: 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileStagingLocationRequestBody'
+      responses:
+        '200':
+          description: File staging location successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileStagingLocationResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/file_staging_locations/delete/{file_staging_location_id}:
+    delete:
+      summary: Delete File Staging Location
+      tags: [File Staging Locations]
+      security:
+      - AdminToken: []
+      description: Delete a file staging location.
+      parameters:
+      - $ref: '#/components/parameters/FileStagingLocationId'
+      responses:
+        '200':
+          description: File staging location successfully deleted.
+          content:
+            application/json:
+              schema:
+                type: integer
+                description: Deleted file staging location ID
+                examples: [1]
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/delivery_methods:
+    get:
+      summary: List Delivery Methods
+      tags: [Delivery Methods]
+      description: List all available delivery methods (public route).
+      responses:
+        '200':
+          description: Successfully returned a list of delivery methods.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeliveryMethodResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+
+  /api/credits/purchase:
+    post:
+      summary: Purchase Credits
+      tags: [Credits]
+      security:
+      - UserToken: []
+      description: Returns a checkout URL for a user to complete a purchase of credits that can then be used to obtain data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  examples: [1000]
+                currency:
+                  type: string
+                  examples: [USD, GBP, EUR]
+                paymentMethodId:
+                  type: integer
+                  examples: [1]
+                  description: from /api/payment_methods
+              required:
+              - quantity
+              - currency
+      responses:
+        '200':
+          description: Successfully returned a credits purchase checkout URL.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/instance_config:
+    get:
+      summary: Get Instance Config
+      tags: [Instance Config]
+      security:
+      - AdminToken: []
+      description: Get the instance configuration details. Public route, but cetain parameters will only be returned to authenticated admin users.
+      responses:
+        '200':
+          description: Successfully returned the instance configuration details.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/InstanceConfigPublic'
+                - $ref: '#/components/schemas/InstanceConfig'
+        '400':
+          $ref: '#/components/responses/400Error'
+  /api/instance_config/metadata:
+    get:
+      summary: Get Instance Config Metadata
+      tags: [Instance Config]
+      security:
+      - AdminToken: []
+      description: Get the instance configuration detail metadata.
+      responses:
+        '200':
+          description: Successfully returned the instance configuration metadata.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstanceConfigMetadata'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/instance_config/update:
+    patch:
+      summary: Update Instance Config
+      tags: [Instance Config]
+      security:
+      - AdminToken: []
+      description: Update the instance configuration details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstanceConfig'
+      responses:
+        '200':
+          description: Successfully updated the instance configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/instance_config/upload/logo:
+    post:
+      summary: Upload Logo
+      tags: [Instance Config]
+      security:
+      - AdminToken: []
+      description: Upload an image logo file to the default storage location and update the instance configuration details to serve it as the main application logo.
+      requestBody:
+        content:
+          image/*:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Successfully uploaded the logo file and updated the instance configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/instance_config/upload/favicon:
+    post:
+      summary: Upload Favicon
+      tags: [Instance Config]
+      security:
+      - AdminToken: []
+      description: Upload a favicon file to the default storage location and update the instance configuration details to serve it as the main application favicon.
+      requestBody:
+        content:
+          image/*:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Successfully uploaded the favicon file and updated the instance configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
         '400':
           $ref: '#/components/responses/400Error'
         '401':
