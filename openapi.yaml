@@ -303,6 +303,36 @@ components:
         items:
           $ref: '#/components/schemas/FileDownloadResponse'
 
+    AuthMethodType:
+      type: string
+      enum: [email, google_oauth, saml]
+    AdminUserBase:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        authMethod:
+          $ref: '#/components/schemas/AuthMethodType'
+    AdminUserResponse:
+      type: object
+      allOf:
+      - properties:
+          id:
+            type: integer
+            examples: [1]
+          createDate:
+            type: string
+            format: date-time
+          lastSigninDate:
+            type: string
+            format: date-time
+          disabledDate:
+            type: string
+            format: date-time
+      - $ref: '#/components/schemas/AdminUserBase'
     AdminUserLogin:
       type: object
       required:
@@ -323,6 +353,75 @@ components:
         expiresAt:
           type: string
           format: date-time
+    AdminUserSession:
+      type: object
+      allOf:
+      - properties:
+          createDate:
+            type: string
+            format: date-time
+          lastSigninDate:
+            type: string
+            format: date-time
+          verifiedDate:
+            type: string
+            format: date-time
+      - $ref: '#/components/schemas/AdminUserBase'
+    UserBase:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        authMethod:
+          $ref: '#/components/schemas/AuthMethodType'
+        credits:
+          type: integer
+    UserResponse:
+      type: object
+      allOf:
+      - properties:
+          id:
+            type: integer
+            examples: [1]
+          createDate:
+            type: string
+            format: date-time
+          lastSigninDate:
+            type: string
+            format: date-time
+          disabledDate:
+            type: string
+            format: date-time
+      - $ref: '#/components/schemas/UserBase'
+    UserLogin:
+      type: object
+      required:
+      - email
+      - password
+      properties: 
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    UserSession:
+      type: object
+      allOf:
+      - properties:
+          createDate:
+            type: string
+            format: date-time
+          lastSigninDate:
+            type: string
+            format: date-time
+          verifiedDate:
+            type: string
+            format: date-time
+      - $ref: '#/components/schemas/UserBase'
 
   parameters:
     ConnectionId:
@@ -360,6 +459,13 @@ components:
       required: true
       schema:
         type: integer
+    PasswordResetToken:
+      name: token
+      description: Password reset token
+      in: query
+      required: true
+      schema:
+        type: string
 
   responses:
     400Error:
@@ -983,10 +1089,86 @@ paths:
         '401':
           $ref: '#/components/responses/401Error'
 
+  /api/auth/admin/users:
+    get:
+      summary: List Admin Users
+      tags: [Auth - Admin]
+      security:
+      - AdminToken: []
+      description: List all admin users.
+      responses:
+        '200':
+          description: Successfully returned a list of admin users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminUserResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth/admin/create_user:
+    post: 
+      summary: Create Admin User
+      tags: [Auth - Admin]
+      security:
+      - AdminToken: []
+      description: Create an admin user with an email address.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Successfully returned admin authorization token.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/AdminUserResponse'
+                - $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth/admin/set_user_password:
+    post: 
+      summary: Set Admin User Password
+      tags: [Auth - Admin]
+      description: Set / reset an admin user's password, with the provided password reset token in the request query.
+      parameters:
+      - $ref: '#/components/parameters/PasswordResetToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successfully set admin user password.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
   /api/auth/admin/login:
     post: 
-      tags: [Auth]
-      description: Login with admin username and password and obtain authorization token.
+      summary: Admin User Login
+      tags: [Auth - Admin]
+      description: Log in with admin username and password and obtain authorization token.
       requestBody:
         required: true
         content:
@@ -1002,3 +1184,135 @@ paths:
                 $ref: '#/components/schemas/TokenResponse'
         '400':
           $ref: '#/components/responses/400Error'
+  /api/auth/admin/session:
+    get: 
+      summary: Get Admin User Session
+      tags: [Auth - Admin]
+      security:
+      - AdminToken: []
+      description: Get session details of the current authorized admin user.
+      responses:
+        '200':
+          description: Successfully returned admin user session object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserSession'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/auth/users:
+    get:
+      summary: List Users
+      tags: [Auth - Users]
+      security:
+      - AdminToken: []
+      description: List all data consumer users.
+      responses:
+        '200':
+          description: Successfully returned a list of users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth/users/create_user:
+    post: 
+      summary: Create Admin User
+      tags: [Auth - Users]
+      security:
+      - AdminToken: []
+      description: Create an admin user with an email address.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Successfully returned admin authorization token.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/AdminUserResponse'
+                - $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth/users/set_user_password:
+    post: 
+      summary: Set User Password
+      tags: [Auth - Users]
+      description: Set / reset a user's password, with the provided password reset token in the request query.
+      parameters:
+      - $ref: '#/components/parameters/PasswordResetToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successfully set user password.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth/users/login:
+    post: 
+      summary: User Login
+      tags: [Auth - Users]
+      description: Log in with username and password and obtain authorization token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: Successfully returned user authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+  /api/auth/users/session:
+    get: 
+      summary: Get User Session
+      tags: [Auth - Users]
+      security:
+      - UserToken: []
+      description: Get session details of the current authorized user.
+      responses:
+        '200':
+          description: Successfully returned user session object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSession'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
