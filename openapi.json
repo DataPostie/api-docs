@@ -1,0 +1,5077 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+      "version": "0.5.0",
+      "title": "DataPostie API",
+      "description": "Public documentation for the DataPostie API. DataPostie enables you to safely and easily monetise and share your data. It sits directly on top of your data infrastructure without moving your data, creates an attractive user portal for your users to acquire the data, and takes care of the security, anonymisation, and delivery aspects of the data transfer.<br /> DataPostie is a SaaS platform and has full API coverage.\n"
+    },
+    "servers": [
+      {
+        "url": "https://api.demo.datapostie.com/"
+      }
+    ],
+    "components": {
+      "securitySchemes": {
+        "UserToken": {
+          "type": "apiKey",
+          "name": "token",
+          "in": "header"
+        },
+        "AdminToken": {
+          "type": "apiKey",
+          "name": "adminToken",
+          "in": "header"
+        }
+      },
+      "schemas": {
+        "EmptyResponse": {
+          "examples": [
+            null
+          ]
+        },
+        "ParametersInput": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "A comma-separated string for key-value pairs",
+              "examples": [
+                "key1=value1,key2=value2"
+              ]
+            },
+            {
+              "type": "object",
+              "examples": [
+                {
+                  "field1": "value1",
+                  "field2": "value2"
+                }
+              ]
+            }
+          ]
+        },
+        "ConnectionDialect": {
+          "type": "string",
+          "enum": [
+            "mysql",
+            "bigquery",
+            "postgresql",
+            "redshift",
+            "sql_server",
+            "snowflake",
+            "teradata",
+            "mariadb",
+            "db2",
+            "athena",
+            "aurora",
+            "hive",
+            "spark",
+            "impala",
+            "dremio",
+            "firebolt",
+            "oracle",
+            "vertica",
+            "synapse",
+            "s3",
+            "gcs",
+            "blob",
+            "looker"
+          ]
+        },
+        "ConnectionBase": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "dialect": {
+              "$ref": "#/components/schemas/ConnectionDialect"
+            },
+            "host": {
+              "type": "string"
+            },
+            "parameters": {
+              "$ref": "#/components/schemas/ParametersInput"
+            }
+          }
+        },
+        "ConnectionRequestBody": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/ConnectionBase"
+            },
+            {
+              "properties": {
+                "username": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string",
+                  "format": "password"
+                }
+              }
+            }
+          ]
+        },
+        "ConnectionResponse": {
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "default": 1
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date"
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/ConnectionBase"
+            }
+          ]
+        },
+        "ConnectionDialectResponse": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "#/components/schemas/ConnectionDialect"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        "DatabaseTableResponse": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "maxRowCount": {
+              "type": "integer",
+              "examples": [
+                10000
+              ]
+            }
+          }
+        },
+        "TableFieldResponse": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "dataType": {
+              "type": "string",
+              "examples": [
+                "string",
+                "int",
+                "float",
+                "boolean",
+                "date",
+                "datetime",
+                "timestamp"
+              ]
+            },
+            "description": {
+              "type": "string"
+            }
+          }
+        },
+        "TableRowResponse": {
+          "type": "object",
+          "properties": {},
+          "description": "An instance of a table row in a query response. A JSON object with generic keys - each key represents a table column header.",
+          "examples": [
+            {
+              "field1": "value1",
+              "field2": "value2"
+            }
+          ]
+        },
+        "DatasetBase": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "connectionId": {
+              "type": "integer"
+            },
+            "identifierInDatabase": {
+              "type": "string",
+              "description": "the dataset's identifier in the connection database (e.g. database schema)"
+            },
+            "isPublic": {
+              "type": "boolean"
+            },
+            "iconSource": {
+              "type": "string",
+              "format": "uri",
+              "description": "A publicly accessible image URL for the icon associated to this dataset."
+            },
+            "isNotAvailable": {
+              "type": "boolean",
+              "description": "Display the dataset as only accessible on demand, i.e. not through the portal or API."
+            },
+            "minQueryRowCount": {
+              "type": "integer",
+              "description": "The minimum number of rows/objects allowed in queries to this dataset."
+            },
+            "paymentMethodId": {
+              "type": "integer"
+            },
+            "pricePerRow": {
+              "type": "number",
+              "format": "float"
+            }
+          }
+        },
+        "DatasetResponse": {
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "lastModifiedDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "dateDeleted": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/DatasetBase"
+            }
+          ]
+        },
+        "DatasetRequestBody": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/DatasetBase"
+            }
+          ]
+        },
+        "QuerySource": {
+          "type": "string",
+          "enum": [
+            "UI",
+            "API"
+          ],
+          "description": "Source from which the query was created (e.g. UI vs. API)."
+        },
+        "SortParameter": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "order": {
+              "type": "integer",
+              "enum": [
+                1,
+                -1
+              ]
+            }
+          },
+          "description": "Sorts a query by the given field ascending (1) or descending (-1)."
+        },
+        "QueryParams": {
+          "type": "object",
+          "properties": {
+            "datasetId": {
+              "type": "number",
+              "examples": [
+                1
+              ]
+            },
+            "table": {
+              "type": "string",
+              "description": "the table identifier in teh query connection's database."
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "distinct": {
+              "type": "boolean"
+            },
+            "rowCount": {
+              "type": "integer"
+            },
+            "sorts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/SortParameter"
+              }
+            }
+          },
+          "required": [
+            "datasetId",
+            "table",
+            "fields",
+            "rowCount"
+          ],
+          "description": "The parameters (building blocks) of the data query"
+        },
+        "QueryCost": {
+          "type": "object",
+          "properties": {
+            "baseAmount": {
+              "type": "number",
+              "format": "float"
+            },
+            "currency": {
+              "type": "string",
+              "examples": [
+                "USD",
+                "GBP",
+                "EUR"
+              ]
+            },
+            "discountedAmount": {
+              "type": "number",
+              "format": "float"
+            },
+            "creditsUsed": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "baseAmount",
+            "currency",
+            "discountedAmount",
+            "creditsUsed"
+          ],
+          "description": "The user cost details of the data query - user-specific."
+        },
+        "QueryDeliveryMethod": {
+          "type": "string",
+          "enum": [
+            "email",
+            "s3",
+            "gcs",
+            "blob",
+            "sftp",
+            "api"
+          ]
+        },
+        "QueryDeliveryParameters": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "format": "email",
+              "description": "If the selected delivery method is email, the email address to which the query results should be sent."
+            },
+            "bucketName": {
+              "type": "string",
+              "description": "If the selected delivery method is a cloud-bucket-based environment, the bucket name to which the query results should be sent."
+            },
+            "bucketRegion": {
+              "type": "string",
+              "description": "If the selected delivery method is a cloud-bucket-based environment, the region of the bucket to which the query results should be sent."
+            },
+            "fileKey": {
+              "type": "string",
+              "description": "If the selected delivery method is a cloud-bucket-based environment, the name of the file containing the query results."
+            },
+            "accessKeyId": {
+              "type": "integer",
+              "description": "The unique identifier of the access key object (from /api/access_keys) that DataPostie will use to access the selected delivery location",
+              "examples": [
+                1
+              ]
+            }
+          }
+        },
+        "QueryDeliveryDetails": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "$ref": "#/components/schemas/QueryDeliveryMethod"
+            },
+            "methodParameters": {
+              "$ref": "#/components/schemas/QueryDeliveryParameters"
+            },
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "sendDate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "sentTo": {
+              "type": "string",
+              "format": "email"
+            }
+          }
+        },
+        "QueryBase": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "$ref": "#/components/schemas/QuerySource"
+            },
+            "queryParams": {
+              "$ref": "#/components/schemas/QueryParams"
+            },
+            "queryDeliveryDetails": {
+              "$ref": "#/components/schemas/QueryDeliveryDetails"
+            }
+          }
+        },
+        "QueryResponse": {
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "lastRunDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "duration": {
+                  "type": "number",
+                  "format": "float",
+                  "description": "Duration of the completed query runtime, in seconds."
+                },
+                "userId": {
+                  "type": "integer",
+                  "description": "Unique ID of the user who created the query. null if unregistered user who created the query on a public dataset.",
+                  "examples": [
+                    1
+                  ]
+                },
+                "queryCost": {
+                  "$ref": "#/components/schemas/QueryCost"
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/QueryBase"
+            }
+          ]
+        },
+        "QueryRequestBody": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/QueryBase"
+            }
+          ]
+        },
+        "FileDownloadResponse": {
+          "type": "object",
+          "properties": {
+            "fileName": {
+              "type": "string"
+            },
+            "signedUrl": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "description": "A signed file download URL."
+        },
+        "RunQueryResponse": {
+          "description": "A query result. Returned format depends on the delivery method, and final query cost. If it's a paid query with outstanding balance, returns a payment URL. Otherwise if the delivery method is API, returns the query results as a JSON object. Otherwise returns the signed file URLs where the query results can be downloaded.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TableRowResponse"
+              }
+            },
+            {
+              "type": "string",
+              "format": "uri",
+              "description": "Payment portal redirect URL."
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/FileDownloadResponse"
+              }
+            }
+          ]
+        },
+        "AuthMethodType": {
+          "type": "string",
+          "enum": [
+            "email",
+            "google_oauth",
+            "saml"
+          ]
+        },
+        "AdminUserBase": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "authMethod": {
+              "$ref": "#/components/schemas/AuthMethodType"
+            }
+          }
+        },
+        "AdminUserResponse": {
+          "type": "object",
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "lastSigninDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "disabledDate": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/AdminUserBase"
+            }
+          ]
+        },
+        "AdminUserLogin": {
+          "type": "object",
+          "required": [
+            "email",
+            "password"
+          ],
+          "properties": {
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "password": {
+              "type": "string",
+              "format": "password"
+            }
+          }
+        },
+        "TokenResponse": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "AdminUserSession": {
+          "type": "object",
+          "allOf": [
+            {
+              "properties": {
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "lastSigninDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "verifiedDate": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/AdminUserBase"
+            }
+          ]
+        },
+        "UserBase": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "authMethod": {
+              "$ref": "#/components/schemas/AuthMethodType"
+            },
+            "credits": {
+              "type": "integer"
+            }
+          }
+        },
+        "UserResponse": {
+          "type": "object",
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "lastSigninDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "disabledDate": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/UserBase"
+            }
+          ]
+        },
+        "UserLogin": {
+          "type": "object",
+          "required": [
+            "email",
+            "password"
+          ],
+          "properties": {
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "password": {
+              "type": "string",
+              "format": "password"
+            }
+          }
+        },
+        "UserSession": {
+          "type": "object",
+          "allOf": [
+            {
+              "properties": {
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "lastSigninDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "verifiedDate": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/UserBase"
+            }
+          ]
+        },
+        "PaymentMethodType": {
+          "type": "string",
+          "enum": [
+            "Stripe",
+            "Invoice",
+            "Paypal",
+            "Mangopay",
+            "Adyen"
+          ]
+        },
+        "PaymentMethodBase": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/components/schemas/PaymentMethodType"
+            },
+            "parameters": {
+              "type": "object",
+              "examples": [
+                {
+                  "field1": "value1",
+                  "field2": "value2"
+                }
+              ]
+            }
+          }
+        },
+        "PaymentMethodResponse": {
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "lastModifiedDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "createdByAdminUserId": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/PaymentMethodBase"
+            }
+          ]
+        },
+        "PaymentMethodRequestBody": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/PaymentMethodBase"
+            },
+            {
+              "properties": {
+                "publicKey": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secret": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "webhookSecret": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "publicKeyTest": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secretTest": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "webhookSecretTest": {
+                  "type": "string",
+                  "format": "password"
+                }
+              }
+            }
+          ]
+        },
+        "AuthMethodBase": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/components/schemas/AuthMethodType"
+            }
+          }
+        },
+        "AuthMethodResponse": {
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "createdByAdminUserId": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/AuthMethodBase"
+            }
+          ]
+        },
+        "AuthMethodRequestBody": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/AuthMethodBase"
+            },
+            {
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "publicKey": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secret": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "keyTest": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "publicKeyTest": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secretTest": {
+                  "type": "string",
+                  "format": "password"
+                }
+              }
+            }
+          ]
+        },
+        "CaptchaMethodType": {
+          "type": "string",
+          "enum": [
+            "reCaptcha"
+          ]
+        },
+        "CaptchaMethodBase": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/components/schemas/CaptchaMethodType"
+            },
+            "parameters": {
+              "type": "object",
+              "examples": [
+                {
+                  "field1": "value1",
+                  "field2": "value2"
+                }
+              ]
+            }
+          }
+        },
+        "CaptchaMethodResponse": {
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "createdByAdminUserId": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/CaptchaMethodBase"
+            }
+          ]
+        },
+        "CaptchaMethodRequestBody": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CaptchaMethodBase"
+            },
+            {
+              "properties": {
+                "publicKey": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secret": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "publicKeyTest": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secretTest": {
+                  "type": "string",
+                  "format": "password"
+                }
+              }
+            }
+          ]
+        },
+        "CRMMethodType": {
+          "type": "string",
+          "enum": [
+            "hubspot",
+            "mailchimp"
+          ]
+        },
+        "CRMMethodBase": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/components/schemas/CRMMethodType"
+            },
+            "parameters": {
+              "type": "object",
+              "examples": [
+                {
+                  "field1": "value1",
+                  "field2": "value2"
+                }
+              ]
+            }
+          }
+        },
+        "CRMMethodResponse": {
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "createdByAdminUserId": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/CRMMethodBase"
+            }
+          ]
+        },
+        "CRMMethodRequestBody": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CRMMethodBase"
+            },
+            {
+              "properties": {
+                "publicKey": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secret": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "publicKeyTest": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secretTest": {
+                  "type": "string",
+                  "format": "password"
+                }
+              }
+            }
+          ]
+        },
+        "StorageMethodType": {
+          "type": "string",
+          "enum": [
+            "s3",
+            "gcs",
+            "blob",
+            "cdn"
+          ]
+        },
+        "StorageMethodBase": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/components/schemas/StorageMethodType"
+            },
+            "directory": {
+              "type": "string"
+            },
+            "parameters": {
+              "type": "object",
+              "examples": [
+                {
+                  "field1": "value1",
+                  "field2": "value2"
+                }
+              ]
+            }
+          }
+        },
+        "StorageMethodResponse": {
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "createdByAdminUserId": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/StorageMethodBase"
+            }
+          ]
+        },
+        "StorageMethodRequestBody": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/StorageMethodBase"
+            },
+            {
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secret": {
+                  "type": "string",
+                  "format": "password"
+                }
+              }
+            }
+          ]
+        },
+        "AccessKeyType": {
+          "type": "string",
+          "enum": [
+            "username_password",
+            "google_cloud",
+            "aws",
+            "azure",
+            "ssh"
+          ]
+        },
+        "AccessKeyBase": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/components/schemas/AccessKeyType"
+            },
+            "parameters": {
+              "type": "object",
+              "examples": [
+                {
+                  "field1": "value1",
+                  "field2": "value2"
+                }
+              ]
+            },
+            "publicKey": {
+              "type": "string",
+              "format": "password"
+            }
+          }
+        },
+        "AccessKeyResponse": {
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "lastModifiedDate": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/AccessKeyBase"
+            }
+          ]
+        },
+        "AccessKeyRequestBody": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/AccessKeyBase"
+            },
+            {
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secret": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "keyTest": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "publicKeyTest": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secretTest": {
+                  "type": "string",
+                  "format": "password"
+                }
+              }
+            }
+          ]
+        },
+        "FileStagingLocationType": {
+          "type": "string",
+          "enum": [
+            "gcs_bucket",
+            "s3_bucket"
+          ]
+        },
+        "FileStagingLocationBase": {
+          "type": "object",
+          "properties": {
+            "bucketName": {
+              "type": "string"
+            },
+            "type": {
+              "$ref": "#/components/schemas/FileStagingLocationType"
+            },
+            "parameters": {
+              "type": "object",
+              "examples": [
+                {
+                  "field1": "value1",
+                  "field2": "value2"
+                }
+              ]
+            }
+          }
+        },
+        "FileStagingLocationResponse": {
+          "allOf": [
+            {
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ]
+                },
+                "createDate": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "isDefault": {
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "$ref": "#/components/schemas/FileStagingLocationBase"
+            }
+          ]
+        },
+        "FileStagingLocationRequestBody": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/FileStagingLocationBase"
+            },
+            {
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "format": "password"
+                },
+                "secret": {
+                  "type": "string",
+                  "format": "password"
+                }
+              }
+            }
+          ]
+        },
+        "DeliveryMethodResponse": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "$ref": "#/components/schemas/QueryDeliveryMethod"
+            },
+            "displayName": {
+              "type": "string"
+            },
+            "methodParameters": {
+              "type": "object",
+              "properties": {
+                "accessKeyId": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ],
+                  "description": "reference to the access key used for the delivery method"
+                },
+                "publicKey": {
+                  "type": "string",
+                  "format": "password",
+                  "description": "public access key for the data consumer to add to their environment to allow the data platform to deliver the data to it."
+                }
+              }
+            }
+          }
+        },
+        "InstanceConfigPublic": {
+          "type": "object",
+          "properties": {
+            "allowPublicUserSignup": {
+              "type": "boolean",
+              "description": "Whether users are allowed to sign up to the platform from the general public, or only admins can create data consumer users."
+            },
+            "entityName": {
+              "type": "string",
+              "description": "The name of the entity/company hosting the DataPostie platform, displayed to users."
+            },
+            "mainSupportContact": {
+              "type": "string",
+              "format": "email",
+              "description": "Contact for the support person/team for data consumer users."
+            },
+            "initialUserCreditsPromo": {
+              "type": "integer",
+              "examples": [
+                5
+              ],
+              "description": "The number of credits a data consumer gets upon signing up. Default is 0."
+            },
+            "logoUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "The public URL of the hosting entity's logo."
+            },
+            "faviconUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "The public URL of the hosting entity's favicon."
+            },
+            "backgroundColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; background color of the application."
+            },
+            "menubarColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; navbar color of the application."
+            },
+            "menubarLinkColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; color of the navbar links in the application."
+            },
+            "textColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; Main text color in the application."
+            },
+            "buttonColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; Main color of the buttons in the application."
+            },
+            "buttonTextColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; Main color of the button text in the application."
+            },
+            "cardColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; Main color of the cards in the application."
+            },
+            "cardTextColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; Main color of the card text in the application."
+            },
+            "primaryColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; Color of the primary (highlight) text in the application."
+            },
+            "secondaryColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; Color of the secondary text in the application."
+            },
+            "linkColor": {
+              "type": "string",
+              "examples": [
+                "#FFFFFF",
+                "#000000"
+              ],
+              "description": "Theming&#58; Main color of the links in the application."
+            },
+            "fontFileUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "Theming&#58; The public URL of the hosting entity's main font file."
+            }
+          }
+        },
+        "InstanceConfig": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/InstanceConfigPublic"
+            },
+            {
+              "properties": {
+                "tokenExpiryTimeSeconds": {
+                  "type": "integer",
+                  "default": 3600,
+                  "description": "Default authentication token expiry time, in seconds."
+                },
+                "defaultCreditsPaymentMethodId": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ],
+                  "description": "The default payment method used for credits purchasing."
+                },
+                "defaultStorageMethodId": {
+                  "type": "integer",
+                  "examples": [
+                    1
+                  ],
+                  "description": "The default storage method used for static assets (e.g. uploaded logo file, fonts file, etc.)"
+                }
+              }
+            }
+          ]
+        },
+        "InstanceConfigMetadata": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "string",
+                "email",
+                "number",
+                "boolean",
+                "date",
+                "file_url",
+                "image_url",
+                "color"
+              ]
+            }
+          }
+        }
+      },
+      "parameters": {
+        "ConnectionId": {
+          "name": "connection_id",
+          "description": "Connection identifier from /api/connections",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        "DatabaseId": {
+          "name": "database_id",
+          "description": "Schema or database identifier within that connection's dialect",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        "TableId": {
+          "name": "table_id",
+          "description": "Table identifier within the database/schema",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        "DatasetId": {
+          "name": "dataset_id",
+          "description": "Dataset identifier from /api/datasets",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        "QueryId": {
+          "name": "query_id",
+          "description": "Query identifier from /api/queries",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        "PasswordResetToken": {
+          "name": "token",
+          "description": "Password reset token",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        "PaymentMethodId": {
+          "name": "payment_method_id",
+          "description": "Payment Method identifier from /api/payment_methods",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        "AuthMethodId": {
+          "name": "auth_method_id",
+          "description": "Auth Method identifier from /api/payment_methods",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        "CaptchaMethodId": {
+          "name": "captcha_method_id",
+          "description": "Captcha Method identifier from /api/captcha_methods",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        "CRMMethodId": {
+          "name": "crm_method_id",
+          "description": "CRM Method identifier from /api/crm_methods",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        "StorageMethodId": {
+          "name": "storage_method_id",
+          "description": "Storage Method identifier from /api/storage_methods",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        "AccessKeyId": {
+          "name": "access_key_id",
+          "description": "Access Key identifier from /api/access_keys",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        },
+        "FileStagingLocationId": {
+          "name": "file_staging_location_id",
+          "description": "File Staging Loction identifier from /api/file_staging_locations",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      },
+      "responses": {
+        "400Error": {
+          "description": "Invalid client request",
+          "content": {
+            "text/html": {
+              "schema": {
+                "type": "string",
+                "default": "Error message"
+              }
+            }
+          }
+        },
+        "401Error": {
+          "description": "Unauthorized - You do not have permission to make this API call with your current user.",
+          "content": {
+            "text/html": {
+              "schema": {
+                "type": "string",
+                "default": "Error message"
+              }
+            }
+          }
+        }
+      }
+    },
+    "paths": {
+      "/api/connections": {
+        "get": {
+          "summary": "List Connections",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all connections.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of connections.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ConnectionResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/connections/dialects": {
+        "get": {
+          "summary": "List Connection Dialects",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List connection dialects (data sources).",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of connection dialects.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ConnectionDialectResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/connections/{connection_id}/databases": {
+        "get": {
+          "summary": "List Connection Databases",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List available databases, data schemas, or folders for the specified connection. These are the schemas available in the database, not the admin-defined datasets the users will see.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/ConnectionId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified connection database schema identifiers.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/connections/{connection_id}/database_tables/{database_id}": {
+        "get": {
+          "summary": "List Connection Database Tables",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List available tables for the specified database schema identifier in the specified connection.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/ConnectionId"
+            },
+            {
+              "$ref": "#/components/parameters/DatabaseId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified connection database schema identifiers.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DatabaseTableResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/connections/{connection_id}/database_table_fields/{database_id}/{table_id}": {
+        "get": {
+          "summary": "List Connection Database Table Fields",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List available fields in the specified table of the specified database schema identifier in the specified connection.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/ConnectionId"
+            },
+            {
+              "$ref": "#/components/parameters/DatabaseId"
+            },
+            {
+              "$ref": "#/components/parameters/TableId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified connection database schema identifiers.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/TableFieldResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/connections/{connection_id}/database_table_preview/{database_id}/{table_id}": {
+        "get": {
+          "summary": "Get Connection Database Table Preview",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Returns the preview of the specified table in a given database/schema identifier in a given connection.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/ConnectionId"
+            },
+            {
+              "$ref": "#/components/parameters/DatabaseId"
+            },
+            {
+              "$ref": "#/components/parameters/TableId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified connection database schema identifiers.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/TableRowResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/connections/{connection_id}": {
+        "get": {
+          "summary": "Get Connection",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List connection dialects (data sources).",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/ConnectionId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified connection details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ConnectionResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/connections/test/{connection_id}": {
+        "get": {
+          "summary": "Test Connection",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Test the specified connection. Returns an empty 200 response on success.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/ConnectionId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Connection test successful.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/EmptyResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/connections/create": {
+        "post": {
+          "summary": "Create Connection",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a connection.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ConnectionRequestBody"
+                    },
+                    {
+                      "required": [
+                        "name",
+                        "dialect",
+                        "host"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Connection successfully created.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ConnectionResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/connections/update/{connection_id}": {
+        "patch": {
+          "summary": "Update Connection",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Update specific fields of a connection.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/ConnectionId"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionRequestBody"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Connection successfully updated.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ConnectionResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/connections/delete/{connection_id}": {
+        "delete": {
+          "summary": "Delete Connection",
+          "tags": [
+            "Connections"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Delete a connection.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/ConnectionId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Connection successfully deleted.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "integer",
+                    "description": "Deleted connection ID",
+                    "examples": [
+                      1
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/datasets": {
+        "get": {
+          "summary": "List Datasets",
+          "tags": [
+            "Datasets"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all datasets. If a user is not authenticated, only public datasets (if any) will be returned. An admin user can see all datasets.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of datasets.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DatasetResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            }
+          }
+        }
+      },
+      "/api/datasets/{dataset_id}": {
+        "get": {
+          "summary": "Get Dataset",
+          "tags": [
+            "Datasets"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get details of the specified dataset.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/DatasetId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified dataset details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/DatasetResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/datasets/{dataset_id}/tables": {
+        "get": {
+          "summary": "List dataset tables",
+          "tags": [
+            "Datasets"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List available tables for the specified dataset.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/DatasetId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified dataset tables.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DatabaseTableResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/datasets/{dataset_id}/table_fields/{table_id}": {
+        "get": {
+          "summary": "List dataset table fields",
+          "tags": [
+            "Datasets"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List available fields in the specified table of the specified dataset.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/DatasetId"
+            },
+            {
+              "$ref": "#/components/parameters/TableId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified table fields.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/TableFieldResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/datasets/{dataset_id}/table_preview/{table_id}": {
+        "get": {
+          "summary": "Get dataset table preview",
+          "tags": [
+            "Datasets"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Return a preview of the specified table of the specified dataset.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/DatasetId"
+            },
+            {
+              "$ref": "#/components/parameters/TableId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified table preview.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/TableRowResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/datasets/create": {
+        "post": {
+          "summary": "Create Dataset",
+          "tags": [
+            "Datasets"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a dataset.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DatasetRequestBody"
+                    },
+                    {
+                      "required": [
+                        "name",
+                        "connectionId",
+                        "identifierInDatabase"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Dataset successfully created.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/DatasetResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/datasets/update/{dataset_id}": {
+        "patch": {
+          "summary": "Update Dataset",
+          "tags": [
+            "Datasets"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Update specific fields of a dataset.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/DatasetId"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetRequestBody"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Dataset successfully updated.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/DatasetResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/datasets/delete/{dataset_id}": {
+        "delete": {
+          "summary": "Delete Dataset",
+          "tags": [
+            "Datasets"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Delete a dataset.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/DatasetId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Dataset successfully deleted.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "integer",
+                    "description": "Deleted dataset ID",
+                    "examples": [
+                      1
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/queries": {
+        "get": {
+          "summary": "List Queries",
+          "tags": [
+            "Queries"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all queries previously created by the authenticated user. An admin user can see all queries.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of queries.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/QueryResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            }
+          }
+        }
+      },
+      "/api/queries/{query_id}": {
+        "get": {
+          "summary": "Get Query",
+          "tags": [
+            "Queries"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get details of the specified query.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/QueryId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified query details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/QueryResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/queries/cost/{query_id}": {
+        "get": {
+          "summary": "Get Query Cost",
+          "tags": [
+            "Queries"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get the cost details of the specified query.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/QueryId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified query cost details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/QueryCost"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/queries/run/{query_id}": {
+        "get": {
+          "summary": "Run Query",
+          "tags": [
+            "Queries"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Run the specified query and retrieve the results via the query's specified delivery method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/QueryId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified query cost details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/RunQueryResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/queries/create": {
+        "post": {
+          "summary": "Create Query",
+          "tags": [
+            "Queries"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a query.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/QueryRequestBody"
+                    },
+                    {
+                      "required": [
+                        "queryParams"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified query cost details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/RunQueryResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/queries/create_and_run": {
+        "post": {
+          "summary": "Create and Run Query",
+          "tags": [
+            "Queries"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a query then run it and return the results. Equivalent of the two previous routes run in succession.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/QueryRequestBody"
+                    },
+                    {
+                      "required": [
+                        "queryParams"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified query cost details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/RunQueryResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/queries/cost": {
+        "post": {
+          "summary": "Get Query Cost",
+          "tags": [
+            "Queries"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            },
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get the cost details of a query with the specified parameters, without creating the query.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/QueryRequestBody"
+                    },
+                    {
+                      "required": [
+                        "queryParams"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified query cost details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/QueryCost"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth/admin/users": {
+        "get": {
+          "summary": "List Admin Users",
+          "tags": [
+            "Auth - Admin"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all admin users.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of admin users.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminUserResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth/admin/create_user": {
+        "post": {
+          "summary": "Create Admin User",
+          "tags": [
+            "Auth - Admin"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create an admin user with an email address.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned admin authorization token.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AdminUserResponse"
+                      },
+                      {
+                        "$ref": "#/components/schemas/TokenResponse"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth/admin/set_user_password": {
+        "post": {
+          "summary": "Set Admin User Password",
+          "tags": [
+            "Auth - Admin"
+          ],
+          "description": "Set / reset an admin user's password, with the provided password reset token in the request query.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/PasswordResetToken"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "password": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully set admin user password.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth/admin/login": {
+        "post": {
+          "summary": "Admin User Login",
+          "tags": [
+            "Auth - Admin"
+          ],
+          "description": "Log in with admin username and password and obtain authorization token.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserLogin"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned admin authorization token.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/TokenResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            }
+          }
+        }
+      },
+      "/api/auth/admin/session": {
+        "get": {
+          "summary": "Get Admin User Session",
+          "tags": [
+            "Auth - Admin"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get session details of the current authorized admin user.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned admin user session object.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/AdminUserSession"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth/users": {
+        "get": {
+          "summary": "List Users",
+          "tags": [
+            "Auth - Users"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all data consumer users.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of users.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/UserResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth/users/create_user": {
+        "post": {
+          "summary": "Create Admin User",
+          "tags": [
+            "Auth - Users"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create an admin user with an email address.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "email": {
+                      "type": "string",
+                      "format": "email"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned admin authorization token.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AdminUserResponse"
+                      },
+                      {
+                        "$ref": "#/components/schemas/TokenResponse"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth/users/set_user_password": {
+        "post": {
+          "summary": "Set User Password",
+          "tags": [
+            "Auth - Users"
+          ],
+          "description": "Set / reset a user's password, with the provided password reset token in the request query.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/PasswordResetToken"
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "password": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully set user password.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth/users/login": {
+        "post": {
+          "summary": "User Login",
+          "tags": [
+            "Auth - Users"
+          ],
+          "description": "Log in with username and password and obtain authorization token.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLogin"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned user authorization token.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/TokenResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            }
+          }
+        }
+      },
+      "/api/auth/users/session": {
+        "get": {
+          "summary": "Get User Session",
+          "tags": [
+            "Auth - Users"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            }
+          ],
+          "description": "Get session details of the current authorized user.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned user session object.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/UserSession"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/payment_methods": {
+        "get": {
+          "summary": "List Payment Methods",
+          "tags": [
+            "Payment Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all available payment methods.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of payment methods.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/PaymentMethodResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/payment_methods/{payment_method_id}": {
+        "get": {
+          "summary": "Get Payment Method",
+          "tags": [
+            "Payment Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get details of the specified payment method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/PaymentMethodId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified payment method details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PaymentMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/payment_methods/create": {
+        "post": {
+          "summary": "Create Payment Method",
+          "tags": [
+            "Payment Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a payment method.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaymentMethodRequestBody"
+                    },
+                    {
+                      "required": [
+                        "name",
+                        "type"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified payment method details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PaymentMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/payment_methods/update/{payment_method_id}": {
+        "patch": {
+          "summary": "Update Payment Method",
+          "tags": [
+            "Payment Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Update specific fields of a payment method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/PaymentMethodId"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethodRequestBody"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Payment method successfully updated.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PaymentMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/payment_methods/delete/{payment_method_id}": {
+        "delete": {
+          "summary": "Delete Payment Method",
+          "tags": [
+            "Payment Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Delete a payment method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/PaymentMethodId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Payment method successfully deleted.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "integer",
+                    "description": "Deleted payment method ID",
+                    "examples": [
+                      1
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth_methods": {
+        "get": {
+          "summary": "List Auth Methods",
+          "tags": [
+            "Auth Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all available user authentication methods.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of auth methods.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AuthMethodResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth_methods/{auth_method_id}": {
+        "get": {
+          "summary": "Get Auth Method",
+          "tags": [
+            "Auth Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get details of the specified auth method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/AuthMethodId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified auth method details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/AuthMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth_methods/create": {
+        "post": {
+          "summary": "Create Auth Method",
+          "tags": [
+            "Auth Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a auth method.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AuthMethodRequestBody"
+                    },
+                    {
+                      "required": [
+                        "name",
+                        "type"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified auth method details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/AuthMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth_methods/update/{auth_method_id}": {
+        "patch": {
+          "summary": "Update Auth Method",
+          "tags": [
+            "Auth Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Update specific fields of a auth method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/AuthMethodId"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMethodRequestBody"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Auth method successfully updated.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/AuthMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/auth_methods/delete/{auth_method_id}": {
+        "delete": {
+          "summary": "Delete Auth Method",
+          "tags": [
+            "Auth Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Delete a auth method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/AuthMethodId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Auth method successfully deleted.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "integer",
+                    "description": "Deleted auth method ID",
+                    "examples": [
+                      1
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/captcha_methods": {
+        "get": {
+          "summary": "List Captcha Methods",
+          "tags": [
+            "Captcha Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all available captcha methods.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of captcha methods.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CaptchaMethodResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/captcha_methods/{captcha_method_id}": {
+        "get": {
+          "summary": "Get Captcha Method",
+          "tags": [
+            "Captcha Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get details of the specified captcha method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/CaptchaMethodId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified captcha method details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CaptchaMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/captcha_methods/create": {
+        "post": {
+          "summary": "Create Captcha Method",
+          "tags": [
+            "Captcha Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a captcha method.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CaptchaMethodRequestBody"
+                    },
+                    {
+                      "required": [
+                        "name",
+                        "type"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified captcha method details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CaptchaMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/captcha_methods/update/{captcha_method_id}": {
+        "patch": {
+          "summary": "Update Captcha Method",
+          "tags": [
+            "Captcha Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Update specific fields of a captcha method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/CaptchaMethodId"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptchaMethodRequestBody"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Captcha method successfully updated.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CaptchaMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/captcha_methods/delete/{captcha_method_id}": {
+        "delete": {
+          "summary": "Delete Captcha Method",
+          "tags": [
+            "Captcha Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Delete a captcha method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/CaptchaMethodId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Captcha method successfully deleted.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "integer",
+                    "description": "Deleted captcha method ID",
+                    "examples": [
+                      1
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/crm_methods": {
+        "get": {
+          "summary": "List CRM Methods",
+          "tags": [
+            "CRM Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all available CRM methods.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of CRM methods.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CRMMethodResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/crm_methods/{crm_method_id}": {
+        "get": {
+          "summary": "Get CRM Method",
+          "tags": [
+            "CRM Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get details of the specified CRM method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/CRMMethodId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified CRM method details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CRMMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/crm_methods/create": {
+        "post": {
+          "summary": "Create CRM Method",
+          "tags": [
+            "CRM Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a CRM method.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CRMMethodRequestBody"
+                    },
+                    {
+                      "required": [
+                        "name",
+                        "type"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified CRM method details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CRMMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/crm_methods/update/{crm_method_id}": {
+        "patch": {
+          "summary": "Update CRM Method",
+          "tags": [
+            "CRM Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Update specific fields of a CRM method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/CRMMethodId"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CRMMethodRequestBody"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "CRM method successfully updated.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CRMMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/crm_methods/delete/{crm_method_id}": {
+        "delete": {
+          "summary": "Delete CRM Method",
+          "tags": [
+            "CRM Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Delete a CRM method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/CRMMethodId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "CRM method successfully deleted.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "integer",
+                    "description": "Deleted CRM method ID",
+                    "examples": [
+                      1
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/storage_methods": {
+        "get": {
+          "summary": "List Storage Methods",
+          "tags": [
+            "Storage Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all available storage methods.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of storage methods.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/StorageMethodResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/storage_methods/types": {
+        "get": {
+          "summary": "List Storage Method Types",
+          "tags": [
+            "Storage Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all available storage method types.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of storage method types.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/StorageMethodType"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/storage_methods/{storage_method_id}": {
+        "get": {
+          "summary": "Get Storage Method",
+          "tags": [
+            "Storage Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get details of the specified storage method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/StorageMethodId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified storage method details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/StorageMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/storage_methods/create": {
+        "post": {
+          "summary": "Create Storage Method",
+          "tags": [
+            "Storage Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a storage method.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/StorageMethodRequestBody"
+                    },
+                    {
+                      "required": [
+                        "name",
+                        "type"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified storage method details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/StorageMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/storage_methods/update/{storage_method_id}": {
+        "patch": {
+          "summary": "Update Storage Method",
+          "tags": [
+            "Storage Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Update specific fields of a storage method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/StorageMethodId"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageMethodRequestBody"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Storage method successfully updated.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/StorageMethodResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/storage_methods/delete/{storage_method_id}": {
+        "delete": {
+          "summary": "Delete Storage Method",
+          "tags": [
+            "Storage Methods"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Delete a storage method.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/StorageMethodId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Storage method successfully deleted.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "integer",
+                    "description": "Deleted storage method ID",
+                    "examples": [
+                      1
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/access_keys": {
+        "get": {
+          "summary": "List Access Keys",
+          "tags": [
+            "Access Keys"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all available access keys.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of access keys.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AccessKeyResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/access_keys/types": {
+        "get": {
+          "summary": "List Access Key Types",
+          "tags": [
+            "Access Keys"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all available access key types.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of access key types.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/AccessKeyType"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/access_keys/{access_key_id}": {
+        "get": {
+          "summary": "Get Access Key",
+          "tags": [
+            "Access Keys"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get details of the specified access key.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/AccessKeyId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified access key details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/AccessKeyResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/access_keys/create": {
+        "post": {
+          "summary": "Create Access Key",
+          "tags": [
+            "Access Keys"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a access key.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AccessKeyRequestBody"
+                    },
+                    {
+                      "required": [
+                        "name",
+                        "type",
+                        "key",
+                        "secret"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified access key details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/AccessKeyResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/access_keys/update/{access_key_id}": {
+        "patch": {
+          "summary": "Update Access Key",
+          "tags": [
+            "Access Keys"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Update specific fields of a access key.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/AccessKeyId"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessKeyRequestBody"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Access key successfully updated.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/AccessKeyResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/access_keys/delete/{access_key_id}": {
+        "delete": {
+          "summary": "Delete Access Key",
+          "tags": [
+            "Access Keys"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Delete a access key.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/AccessKeyId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Access key successfully deleted.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "integer",
+                    "description": "Deleted access key ID",
+                    "examples": [
+                      1
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/file_staging_locations": {
+        "get": {
+          "summary": "List File Staging Locations",
+          "tags": [
+            "File Staging Locations"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all available file staging locations.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of file staging locations.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/FileStagingLocationResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/file_staging_locations/types": {
+        "get": {
+          "summary": "List File Staging Location Types",
+          "tags": [
+            "File Staging Locations"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "List all available file staging location types.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of file staging location types.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/FileStagingLocationType"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/file_staging_locations/{file_staging_location_id}": {
+        "get": {
+          "summary": "Get File Staging Location",
+          "tags": [
+            "File Staging Locations"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get details of the specified file staging location.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/FileStagingLocationId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified file staging location details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/FileStagingLocationResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/file_staging_locations/create": {
+        "post": {
+          "summary": "Create File Staging Location",
+          "tags": [
+            "File Staging Locations"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Create a file staging location.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/FileStagingLocationRequestBody"
+                    },
+                    {
+                      "required": [
+                        "name",
+                        "type"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned the specified file staging location details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/FileStagingLocationResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/file_staging_locations/update/{file_staging_location_id}": {
+        "patch": {
+          "summary": "Update File Staging Location",
+          "tags": [
+            "File Staging Locations"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Update specific fields of a file staging location.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/FileStagingLocationId"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileStagingLocationRequestBody"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "File staging location successfully updated.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/FileStagingLocationResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/file_staging_locations/delete/{file_staging_location_id}": {
+        "delete": {
+          "summary": "Delete File Staging Location",
+          "tags": [
+            "File Staging Locations"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Delete a file staging location.",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/FileStagingLocationId"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "File staging location successfully deleted.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "integer",
+                    "description": "Deleted file staging location ID",
+                    "examples": [
+                      1
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/delivery_methods": {
+        "get": {
+          "summary": "List Delivery Methods",
+          "tags": [
+            "Delivery Methods"
+          ],
+          "description": "List all available delivery methods (public route).",
+          "responses": {
+            "200": {
+              "description": "Successfully returned a list of delivery methods.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DeliveryMethodResponse"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            }
+          }
+        }
+      },
+      "/api/credits/purchase": {
+        "post": {
+          "summary": "Purchase Credits",
+          "tags": [
+            "Credits"
+          ],
+          "security": [
+            {
+              "UserToken": []
+            }
+          ],
+          "description": "Returns a checkout URL for a user to complete a purchase of credits that can then be used to obtain data.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "quantity": {
+                      "type": "integer",
+                      "examples": [
+                        1000
+                      ]
+                    },
+                    "currency": {
+                      "type": "string",
+                      "examples": [
+                        "USD",
+                        "GBP",
+                        "EUR"
+                      ]
+                    },
+                    "paymentMethodId": {
+                      "type": "integer",
+                      "examples": [
+                        1
+                      ],
+                      "description": "from /api/payment_methods"
+                    }
+                  },
+                  "required": [
+                    "quantity",
+                    "currency"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully returned a credits purchase checkout URL.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/instance_config": {
+        "get": {
+          "summary": "Get Instance Config",
+          "tags": [
+            "Instance Config"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get the instance configuration details. Public route, but cetain parameters will only be returned to authenticated admin users.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned the instance configuration details.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/InstanceConfigPublic"
+                      },
+                      {
+                        "$ref": "#/components/schemas/InstanceConfig"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            }
+          }
+        }
+      },
+      "/api/instance_config/metadata": {
+        "get": {
+          "summary": "Get Instance Config Metadata",
+          "tags": [
+            "Instance Config"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Get the instance configuration detail metadata.",
+          "responses": {
+            "200": {
+              "description": "Successfully returned the instance configuration metadata.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/InstanceConfigMetadata"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/instance_config/update": {
+        "patch": {
+          "summary": "Update Instance Config",
+          "tags": [
+            "Instance Config"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Update the instance configuration details.",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstanceConfig"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully updated the instance configuration.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/EmptyResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/instance_config/upload/logo": {
+        "post": {
+          "summary": "Upload Logo",
+          "tags": [
+            "Instance Config"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Upload an image logo file to the default storage location and update the instance configuration details to serve it as the main application logo.",
+          "requestBody": {
+            "content": {
+              "image/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Successfully uploaded the logo file and updated the instance configuration.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/EmptyResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      },
+      "/api/instance_config/upload/favicon": {
+        "post": {
+          "summary": "Upload Favicon",
+          "tags": [
+            "Instance Config"
+          ],
+          "security": [
+            {
+              "AdminToken": []
+            }
+          ],
+          "description": "Upload a favicon file to the default storage location and update the instance configuration details to serve it as the main application favicon.",
+          "requestBody": {
+            "content": {
+              "image/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Successfully uploaded the favicon file and updated the instance configuration.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/EmptyResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/400Error"
+            },
+            "401": {
+              "$ref": "#/components/responses/401Error"
+            }
+          }
+        }
+      }
+    }
+}
