@@ -645,6 +645,7 @@ components:
             format: password
 
     DeliveryMethodResponse:
+      type: object
       properties:
         method:
           $ref: '#/components/schemas/QueryDeliveryMethod'
@@ -661,6 +662,106 @@ components:
               type: string
               format: password
               description: public access key for the data consumer to add to their environment to allow the data platform to deliver the data to it.
+
+    InstanceConfigPublic:
+      type: object
+      properties:
+        allowPublicUserSignup:
+          type: boolean
+          description: Whether users are allowed to sign up to the platform from the general public, or only admins can create data consumer users.
+        entityName:
+          type: string
+          description: The name of the entity/company hosting the DataPostie platform, displayed to users.
+        mainSupportContact:
+          type: string
+          format: email
+          description: Contact for the support person/team for data consumer users.
+        initialUserCreditsPromo:
+          type: integer
+          examples: [5]
+          description: The number of credits a data consumer gets upon signing up. Default is 0.
+        logoUrl:
+          type: string
+          format: uri
+          description: The public URL of the hosting entity's logo.
+        faviconUrl:
+          type: string
+          format: uri
+          description: The public URL of the hosting entity's favicon.
+        backgroundColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; background color of the application.
+        menubarColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; navbar color of the application.
+        menubarLinkColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; color of the navbar links in the application.
+        textColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main text color in the application.
+        buttonColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main color of the buttons in the application.
+        buttonTextColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main color of the button text in the application.
+        cardColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main color of the cards in the application.
+        cardTextColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main color of the card text in the application.
+        primaryColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Color of the primary (highlight) text in the application.
+        secondaryColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Color of the secondary text in the application.
+        linkColor:
+          type: string
+          examples: ["#FFFFFF", "#000000"]
+          description: Theming&#58; Main color of the links in the application.
+        fontFileUrl:
+          type: string
+          format: uri
+          description: Theming&#58; The public URL of the hosting entity's main font file.
+    InstanceConfig:
+      allOf:
+      - $ref: '#/components/schemas/InstanceConfigPublic'
+      - properties:
+          tokenExpiryTimeSeconds:
+            type: integer
+            default: 3600
+            description: Default authentication token expiry time, in seconds.
+          defaultCreditsPaymentMethodId:
+            type: integer
+            examples: [1]
+            description: The default payment method used for credits purchasing.
+          defaultStorageMethodId:
+            type: integer
+            examples: [1]
+            description: The default storage method used for static assets (e.g. uploaded logo file, fonts file, etc.)
+    InstanceConfigMetadata:
+      type: object
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [string, email, number, boolean, date, file_url, image_url, color]
 
   parameters:
     ConnectionId:
@@ -2292,3 +2393,156 @@ paths:
                   $ref: '#/components/schemas/DeliveryMethodResponse'
         '400':
           $ref: '#/components/responses/400Error'
+
+  /api/credits/purchase:
+    post:
+      summary: Purchase Credits
+      tags: [Credits]
+      security:
+      - UserToken: []
+      description: Returns a checkout URL for a user to complete a purchase of credits that can then be used to obtain data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  examples: [1000]
+                currency:
+                  type: string
+                  examples: [USD, GBP, EUR]
+                paymentMethodId:
+                  type: integer
+                  examples: [1]
+                  description: from /api/payment_methods
+              required:
+              - quantity
+              - currency
+      responses:
+        '200':
+          description: Successfully returned a credits purchase checkout URL.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+
+  /api/instance_config:
+    get:
+      summary: Get Instance Config
+      tags: [Instance Config]
+      security:
+      - AdminToken: []
+      description: Get the instance configuration details. Public route, but cetain parameters will only be returned to authenticated admin users.
+      responses:
+        '200':
+          description: Successfully returned the instance configuration details.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/InstanceConfigPublic'
+                - $ref: '#/components/schemas/InstanceConfig'
+        '400':
+          $ref: '#/components/responses/400Error'
+  /api/instance_config/metadata:
+    get:
+      summary: Get Instance Config Metadata
+      tags: [Instance Config]
+      security:
+      - AdminToken: []
+      description: Get the instance configuration detail metadata.
+      responses:
+        '200':
+          description: Successfully returned the instance configuration metadata.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstanceConfigMetadata'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/instance_config/update:
+    patch:
+      summary: Update Instance Config
+      tags: [Instance Config]
+      security:
+      - AdminToken: []
+      description: Update the instance configuration details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstanceConfig'
+      responses:
+        '200':
+          description: Successfully updated the instance configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/instance_config/upload/logo:
+    post:
+      summary: Upload Logo
+      tags: [Instance Config]
+      security:
+      - AdminToken: []
+      description: Upload an image logo file to the default storage location and update the instance configuration details to serve it as the main application logo.
+      requestBody:
+        content:
+          image/*:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Successfully uploaded the logo file and updated the instance configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/instance_config/upload/favicon:
+    post:
+      summary: Upload Favicon
+      tags: [Instance Config]
+      security:
+      - AdminToken: []
+      description: Upload a favicon file to the default storage location and update the instance configuration details to serve it as the main application favicon.
+      requestBody:
+        content:
+          image/*:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Successfully uploaded the favicon file and updated the instance configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
