@@ -477,9 +477,6 @@ components:
             type: string
             format: password
 
-    AuthMethodType:
-      type: string
-      enum: [email, google_ouath, saml]
     AuthMethodBase:
       type: object
       properties:
