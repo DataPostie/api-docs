@@ -386,10 +386,17 @@ components:
           id:
             type: integer
             examples: [1]
+          createdBy:
+            type: integer
+            examples: [1]
+            description: If this was a data consumer user created by an admin user, this is the ID of the admin user who created this user. 
           createDate:
             type: string
             format: date-time
           lastSigninDate:
+            type: string
+            format: date-time
+          verifiedDate:
             type: string
             format: date-time
           disabledDate:
@@ -408,6 +415,14 @@ components:
         password:
           type: string
           format: password
+    UserVerificationTokenResponse:
+      type: object
+      properties: 
+        verificationToken:
+          type: string
+        verificationTokenExpiryDate:
+          type: string
+          format: date-time
     UserSession:
       type: object
       allOf:
@@ -902,6 +917,26 @@ components:
       required: true
       schema:
         type: string
+    UserId:
+      name: user_id
+      description: Data consumer user identifier
+      in: path
+      required: true
+      schema:
+        type: integer
+    SendEmail:
+      name: sendEmail
+      description: Data consumer user identifier
+      in: query
+      schema:
+        type: boolean
+    VerifyEmailToken:
+      name: token
+      description: User email verification token
+      in: query
+      required: true
+      schema:
+        type: string
     PaymentMethodId:
       name: payment_method_id
       description: Payment Method identifier from /api/payment_methods
@@ -911,7 +946,7 @@ components:
         type: integer
     AuthMethodId:
       name: auth_method_id
-      description: Auth Method identifier from /api/payment_methods
+      description: Auth Method identifier from /api/auth_methods
       in: path
       required: true
       schema:
@@ -1708,13 +1743,40 @@ paths:
           $ref: '#/components/responses/400Error'
         '401':
           $ref: '#/components/responses/401Error'
-  /api/auth/users/create_user:
-    post: 
-      summary: Create Admin User
+  /api/auth/users/{user_id}:
+    get:
+      summary: Get User by ID
       tags: [Auth - Users]
       security:
       - AdminToken: []
-      description: Create an admin user with an email address.
+      description: Get a data consumer user's details based on the given ID.
+      parameters:
+      - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Successfully returned a the user's details.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/UserResponse'
+                - properties:
+                    passwordHash:
+                      type: string
+                      format: password
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth/users/create:
+    post: 
+      summary: Create User
+      tags: [Auth - Users]
+      security:
+      - AdminToken: []
+      parameters:
+      - $ref: '#/components/parameters/SendEmail'
+      description: Create a data consumer user with an email address. If the API call includes a sendEmail=true query parameter, the new user will be emailed their sign up link.
       requestBody:
         required: true
         content:
@@ -1726,39 +1788,75 @@ paths:
                   format: email
       responses:
         '200':
-          description: Successfully returned admin authorization token.
+          description: Successfully returned new user including authorization token. If the request includes a sendEmail=true query parameter, emailed the new user their sign up link.
           content:
             application/json:
               schema:
                 allOf:
-                - $ref: '#/components/schemas/AdminUserResponse'
+                - $ref: '#/components/schemas/UserResponse'
                 - $ref: '#/components/schemas/TokenResponse'
         '400':
           $ref: '#/components/responses/400Error'
         '401':
           $ref: '#/components/responses/401Error'
-  /api/auth/users/set_user_password:
+  /api/auth/users/generate_password_reset_token:
     post: 
-      summary: Set User Password
+      summary: Generate Password Reset Token
       tags: [Auth - Users]
-      description: Set / reset a user's password, with the provided password reset token in the request query.
-      parameters:
-      - $ref: '#/components/parameters/PasswordResetToken'
+      description: Generate a data consumer user's password reset token. Public route - does NOT return the token, instead sends it to the designated user email if that user exists.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               properties:
-                password:
+                email:
                   type: string
+                  format: email
       responses:
         '200':
-          description: Successfully set user password.
+          description: Successfully sent the user their password reset token.
           content:
             application/json:
               schema:
-                type: boolean
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth/users/update/{user_id}:
+    patch:
+      summary: Update User
+      tags: [Auth - Users]
+      security:
+      - AdminToken: []
+      description: Update a user with a given user ID.
+      parameters:
+      - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Successfully updated the user.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/UserBase'
+                - properties:
+                    verifiedDate:
+                      type: string
+                      format: date-time
+                    disabledDate:
+                      type: string
+                      format: date-time
         '400':
           $ref: '#/components/responses/400Error'
         '401':
@@ -1781,6 +1879,117 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+  /api/auth/users/google_oauth_login/{auth_method_id}:
+    post: 
+      summary: User Google OAuth Login
+      tags: [Auth - Users]
+      description: Log in with Google OAuth token and obtain authorization token. the auth_method_id parameter must be a Google OAuth login method.
+      parameters:
+      - $ref: '#/components/parameters/AuthMethodId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Successfully returned user authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+  /api/auth/users/set_user_password:
+    post: 
+      summary: Set User Password
+      tags: [Auth - Users]
+      description: Set / reset a user's password, with the provided password reset token in the request query. Public route.
+      parameters:
+      - $ref: '#/components/parameters/PasswordResetToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successfully set user password.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '400':
+          $ref: '#/components/responses/400Error'
+        '401':
+          $ref: '#/components/responses/401Error'
+  /api/auth/users/sign_up:
+    post: 
+      summary: Sign Up User
+      tags: [Auth - Users]
+      description: Sign up a user with the supplied email and password. Public user signup must be allowed in the instance configuration settings (/api/instance_config). Sends that user an email with their email verification token and link.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: Successfully signed up and added user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+  /api/auth/users/verify_email:
+    get: 
+      summary: Verify User Email
+      tags: [Auth - Users]
+      description: Verify a signed up user's email address with the given verification token. Public user signup must be allowed in the instance configuration settings (/api/instance_config).
+      parameters:
+      - $ref: '#/components/parameters/VerifyEmailToken'
+      responses:
+        '200':
+          description: Successfully verified the user's email and updated their verifiedDate field.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/400Error'
+  /api/auth/users/generate_email_verification_token:
+    post: 
+      summary: Generate Email Verification Token
+      tags: [Auth - Users]
+      description: Generate a signed up user's email verification token and send it to them. Public user signup must be allowed in the instance configuration settings (/api/instance_config).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Successfully returned user authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
         '400':
           $ref: '#/components/responses/400Error'
   /api/auth/users/session:
