@@ -7,7 +7,73 @@
   },
   "servers": [
     {
-      "url": "https://api.demo.datapostie.com/"
+      "url": "https://api.publicdemo.datapostie.com/"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Connections",
+      "description": "Create, list, get, update, delete and test DataPostie's connections to your data sources."
+    },
+    {
+      "name": "Datasets",
+      "description": "Create, list, get, update, and delete datasets - these are the tabular or file-based datasets that your users will see. These routes also allow you to list the tables, fields, and/or files in these datasets."
+    },
+    {
+      "name": "Queries",
+      "description": "Users use these routes to create, run, and price queries on the datasets available."
+    },
+    {
+      "name": "Auth - Admin",
+      "description": "Authentication routes for admin users."
+    },
+    {
+      "name": "Auth - Users",
+      "description": "Authentication routes for data consumer users. Includes login, signup, password reset, and email verification routes."
+    },
+    {
+      "name": "Auth - Users",
+      "description": "Authentication routes for data consumer users. Includes login, signup, password reset, and email verification routes."
+    },
+    {
+      "name": "Payment Methods",
+      "description": "Create, list, get, update, and delete the different payment methods users can use to purchase their data."
+    },
+    {
+      "name": "Auth Methods",
+      "description": "Create, list, get, update, and delete the different authentications users can use to sign up and login to the platform."
+    },
+    {
+      "name": "Captcha Methods",
+      "description": "Create, list, get, update, and delete the different captcha methods to protect your user signup and login pages."
+    },
+    {
+      "name": "CRM Methods",
+      "description": "Create, list, get, update, and delete the different CRM methods integrated with your platform."
+    },
+    {
+      "name": "Storage Methods",
+      "description": "Create, list, get, update, and delete the different storage methods the platform uses to store and serve static files (e.g. images, logos, font files, etc.)"
+    },
+    {
+      "name": "Access Keys",
+      "description": "Create, list, get, update, and delete the different access keys the platform uses to deliver data to the data consumer's environment."
+    },
+    {
+      "name": "File Staging Locations",
+      "description": "Create, list, get, update, and delete the different file staging locations in which the platform stores compressed data before sending it to the data consumer."
+    },
+    {
+      "name": "Delivery Methods",
+      "description": "Create, list, get, update, and delete the different delivery methods availavle to the data consumers to obtain their data."
+    },
+    {
+      "name": "Credits",
+      "description": "Routes to allow users to purchase additional credits to run data API calls."
+    },
+    {
+      "name": "Instance Config",
+      "description": "Manage the platform instance's general configuration parameters."
     }
   ],
   "components": {
@@ -658,11 +724,22 @@
                   1
                 ]
               },
+              "createdBy": {
+                "type": "integer",
+                "examples": [
+                  1
+                ],
+                "description": "If this was a data consumer user created by an admin user, this is the ID of the admin user who created this user."
+              },
               "createDate": {
                 "type": "string",
                 "format": "date-time"
               },
               "lastSigninDate": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "verifiedDate": {
                 "type": "string",
                 "format": "date-time"
               },
@@ -691,6 +768,18 @@
           "password": {
             "type": "string",
             "format": "password"
+          }
+        }
+      },
+      "UserVerificationTokenResponse": {
+        "type": "object",
+        "properties": {
+          "verificationToken": {
+            "type": "string"
+          },
+          "verificationTokenExpiryDate": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -1552,6 +1641,32 @@
           "type": "string"
         }
       },
+      "UserId": {
+        "name": "user_id",
+        "description": "Data consumer user identifier",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "SendEmail": {
+        "name": "sendEmail",
+        "description": "Data consumer user identifier",
+        "in": "query",
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "VerifyEmailToken": {
+        "name": "token",
+        "description": "User email verification token",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
       "PaymentMethodId": {
         "name": "payment_method_id",
         "description": "Payment Method identifier from /api/payment_methods",
@@ -1563,7 +1678,7 @@
       },
       "AuthMethodId": {
         "name": "auth_method_id",
-        "description": "Auth Method identifier from /api/payment_methods",
+        "description": "Auth Method identifier from /api/auth_methods",
         "in": "path",
         "required": true,
         "schema": {
@@ -3004,9 +3119,9 @@
         }
       }
     },
-    "/api/auth/users/create_user": {
-      "post": {
-        "summary": "Create Admin User",
+    "/api/auth/users/{user_id}": {
+      "get": {
+        "summary": "Get User by ID",
         "tags": [
           "Auth - Users"
         ],
@@ -3015,7 +3130,61 @@
             "AdminToken": []
           }
         ],
-        "description": "Create an admin user with an email address.",
+        "description": "Get a data consumer user's details based on the given ID.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully returned a the user's details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UserResponse"
+                    },
+                    {
+                      "properties": {
+                        "passwordHash": {
+                          "type": "string",
+                          "format": "password"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/401Error"
+          }
+        }
+      }
+    },
+    "/api/auth/users/create": {
+      "post": {
+        "summary": "Create User",
+        "tags": [
+          "Auth - Users"
+        ],
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SendEmail"
+          }
+        ],
+        "description": "Create a data consumer user with an email address. If the API call includes a sendEmail=true query parameter, the new user will be emailed their sign up link.",
         "requestBody": {
           "required": true,
           "content": {
@@ -3033,13 +3202,13 @@
         },
         "responses": {
           "200": {
-            "description": "Successfully returned admin authorization token.",
+            "description": "Successfully returned new user including authorization token. If the request includes a sendEmail=true query parameter, emailed the new user their sign up link.",
             "content": {
               "application/json": {
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/AdminUserResponse"
+                      "$ref": "#/components/schemas/UserResponse"
                     },
                     {
                       "$ref": "#/components/schemas/TokenResponse"
@@ -3058,13 +3227,201 @@
         }
       }
     },
+    "/api/auth/users/generate_password_reset_token": {
+      "post": {
+        "summary": "Generate Password Reset Token",
+        "tags": [
+          "Auth - Users"
+        ],
+        "description": "Generate a data consumer user's password reset token. Public route - does NOT return the token, instead sends it to the designated user email if that user exists.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully sent the user their password reset token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/401Error"
+          }
+        }
+      }
+    },
+    "/api/auth/users/update/{user_id}": {
+      "patch": {
+        "summary": "Update User",
+        "tags": [
+          "Auth - Users"
+        ],
+        "security": [
+          {
+            "AdminToken": []
+          }
+        ],
+        "description": "Update a user with a given user ID.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated the user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UserBase"
+                    },
+                    {
+                      "properties": {
+                        "verifiedDate": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "disabledDate": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/401Error"
+          }
+        }
+      }
+    },
+    "/api/auth/users/login": {
+      "post": {
+        "summary": "User Login",
+        "tags": [
+          "Auth - Users"
+        ],
+        "description": "Log in with username and password and obtain authorization token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully returned user authorization token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400Error"
+          }
+        }
+      }
+    },
+    "/api/auth/users/google_oauth_login/{auth_method_id}": {
+      "post": {
+        "summary": "User Google OAuth Login",
+        "tags": [
+          "Auth - Users"
+        ],
+        "description": "Log in with Google OAuth token and obtain authorization token. the auth_method_id parameter must be a Google OAuth login method.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AuthMethodId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully returned user authorization token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400Error"
+          }
+        }
+      }
+    },
     "/api/auth/users/set_user_password": {
       "post": {
         "summary": "Set User Password",
         "tags": [
           "Auth - Users"
         ],
-        "description": "Set / reset a user's password, with the provided password reset token in the request query.",
+        "description": "Set / reset a user's password, with the provided password reset token in the request query. Public route.",
         "parameters": [
           {
             "$ref": "#/components/parameters/PasswordResetToken"
@@ -3104,13 +3461,13 @@
         }
       }
     },
-    "/api/auth/users/login": {
+    "/api/auth/users/sign_up": {
       "post": {
-        "summary": "User Login",
+        "summary": "Sign Up User",
         "tags": [
           "Auth - Users"
         ],
-        "description": "Log in with username and password and obtain authorization token.",
+        "description": "Sign up a user with the supplied email and password. Public user signup must be allowed in the instance configuration settings (/api/instance_config). Sends that user an email with their email verification token and link.",
         "requestBody": {
           "required": true,
           "content": {
@@ -3123,11 +3480,80 @@
         },
         "responses": {
           "200": {
+            "description": "Successfully signed up and added user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400Error"
+          }
+        }
+      }
+    },
+    "/api/auth/users/verify_email": {
+      "get": {
+        "summary": "Verify User Email",
+        "tags": [
+          "Auth - Users"
+        ],
+        "description": "Verify a signed up user's email address with the given verification token. Public user signup must be allowed in the instance configuration settings (/api/instance_config).",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/VerifyEmailToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully verified the user's email and updated their verifiedDate field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400Error"
+          }
+        }
+      }
+    },
+    "/api/auth/users/generate_email_verification_token": {
+      "post": {
+        "summary": "Generate Email Verification Token",
+        "tags": [
+          "Auth - Users"
+        ],
+        "description": "Generate a signed up user's email verification token and send it to them. Public user signup must be allowed in the instance configuration settings (/api/instance_config).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
             "description": "Successfully returned user authorization token.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TokenResponse"
+                  "$ref": "#/components/schemas/EmptyResponse"
                 }
               }
             }
