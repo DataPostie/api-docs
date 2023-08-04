@@ -8,7 +8,41 @@ info:
     DataPostie is a SaaS platform and has full API coverage.
 
 servers:
-- url: https://api.demo.datapostie.com/
+- url: https://api.publicdemo.datapostie.com/
+
+tags:
+- name: Connections
+  description: Create, list, get, update, delete and test DataPostie's connections to your data sources.
+- name: Datasets
+  description: Create, list, get, update, and delete datasets - these are the tabular or file-based datasets that your users will see. These routes also allow you to list the tables, fields, and/or files in these datasets.
+- name: Queries
+  description: Users use these routes to create, run, and price queries on the datasets available.
+- name: Auth - Admin
+  description: Authentication routes for admin users.
+- name: Auth - Users
+  description: Authentication routes for data consumer users. Includes login, signup, password reset, and email verification routes.
+- name: Auth - Users
+  description: Authentication routes for data consumer users. Includes login, signup, password reset, and email verification routes.
+- name: Payment Methods
+  description: Create, list, get, update, and delete the different payment methods users can use to purchase their data.
+- name: Auth Methods
+  description: Create, list, get, update, and delete the different authentications users can use to sign up and login to the platform.
+- name: Captcha Methods
+  description: Create, list, get, update, and delete the different captcha methods to protect your user signup and login pages.
+- name: CRM Methods
+  description: Create, list, get, update, and delete the different CRM methods integrated with your platform.
+- name: Storage Methods
+  description: Create, list, get, update, and delete the different storage methods the platform uses to store and serve static files (e.g. images, logos, font files, etc.)
+- name: Access Keys
+  description: Create, list, get, update, and delete the different access keys the platform uses to deliver data to the data consumer's environment.
+- name: File Staging Locations
+  description: Create, list, get, update, and delete the different file staging locations in which the platform stores compressed data before sending it to the data consumer.
+- name: Delivery Methods
+  description: Create, list, get, update, and delete the different delivery methods availavle to the data consumers to obtain their data.
+- name: Credits
+  description: Routes to allow users to purchase additional credits to run data API calls.
+- name: Instance Config
+  description: Manage the platform instance's general configuration parameters.
 
 components:
   securitySchemes:
