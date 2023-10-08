@@ -944,6 +944,13 @@ components:
       required: true
       schema:
         type: integer
+    Async:
+      name: async
+      description: Whether a query should be run asynchronously (true if included, no matter the value)
+      in: query
+      required: false
+      schema:
+        type: boolean
     PasswordResetToken:
       name: token
       description: Password reset token
@@ -1304,7 +1311,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DatasetResponse'
+                  allOf:
+                  - $ref: '#/components/schemas/DatasetResponse'
+                  - properties:
+                      dialect:
+                        $ref: '#/components/schemas/ConnectionDialect'
         '400':
           $ref: '#/components/responses/400Error'
   /api/datasets/{dataset_id}:
@@ -1492,7 +1503,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/QueryResponse'
+                  allOf:
+                  - $ref: '#/components/schemas/QueryResponse'
+                  - properties:
+                      userEmail:
+                        type: string
+                        format: email
+                      datasetName:
+                        type: string
         '400':
           $ref: '#/components/responses/400Error'
   /api/queries/{query_id}:
@@ -1594,6 +1612,8 @@ paths:
       - UserToken: []
       - AdminToken: []
       description: Create a query then run it and return the results. Equivalent of the two previous routes run in succession.
+      parameters:
+      - $ref: '#/components/parameters/Async'
       requestBody:
         required: true
         content:
